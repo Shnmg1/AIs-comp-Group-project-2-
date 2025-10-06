@@ -1,0 +1,264 @@
+/* Mississippi Quality Education Platform - Custom Styles */
+
+/* CSS Variables for Mississippi Flag Colors */
+:root {
+    --ms-red: #C8102E;
+    --ms-white: #FFFFFF;
+    --ms-navy: #002868;
+    --ms-gold: #FFD700;
+    --ms-light-blue: #E6F3FF;
+    --ms-light-red: #FFE6E6;
+}
+
+/* Global Styles */
+body {
+    background-color: var(--ms-white);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--ms-navy);
+}
+
+/* Navigation Styles */
+.bg-navy {
+    background-color: var(--ms-navy) !important;
+}
+
+.navbar-brand {
+    color: var(--ms-white) !important;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: var(--ms-white) !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--ms-gold) !important;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--ms-navy);
+    border-color: var(--ms-navy);
+}
+
+.btn-primary:hover {
+    background-color: #001f4a;
+    border-color: #001f4a;
+}
+
+.btn-danger {
+    background-color: var(--ms-red);
+    border-color: var(--ms-red);
+}
+
+.btn-danger:hover {
+    background-color: #a00d26;
+    border-color: #a00d26;
+}
+
+.btn-warning {
+    background-color: var(--ms-gold);
+    border-color: var(--ms-gold);
+    color: var(--ms-navy);
+}
+
+.btn-warning:hover {
+    background-color: #e6c200;
+    border-color: #e6c200;
+    color: var(--ms-navy);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 40, 104, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 40, 104, 0.2);
+}
+
+.card-header {
+    background-color: var(--ms-light-blue);
+    border-bottom: 3px solid var(--ms-navy);
+    color: var(--ms-navy);
+    font-weight: 600;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--ms-navy) 0%, var(--ms-red) 100%);
+    color: var(--ms-white);
+    padding: 4rem 0;
+    margin-bottom: 2rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Subject Cards */
+.subject-card {
+    background: var(--ms-white);
+    border-left: 5px solid var(--ms-red);
+    transition: all 0.3s ease;
+}
+
+.subject-card:hover {
+    border-left-color: var(--ms-gold);
+    background-color: var(--ms-light-blue);
+}
+
+/* Video Cards */
+.video-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(45deg, var(--ms-light-blue), var(--ms-light-red));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ms-navy);
+    font-size: 3rem;
+}
+
+/* AI Chat Styles */
+.chat-container {
+    height: 500px;
+    border: 2px solid var(--ms-light-blue);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.chat-messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.message.user {
+    background-color: var(--ms-navy);
+    color: var(--ms-white);
+    margin-left: auto;
+    text-align: right;
+}
+
+.message.ai {
+    background-color: var(--ms-light-blue);
+    color: var(--ms-navy);
+    margin-right: auto;
+}
+
+.chat-input {
+    border-top: 2px solid var(--ms-light-blue);
+    padding: 1rem;
+    background-color: var(--ms-white);
+}
+
+/* Loading Spinner */
+.spinner-border {
+    color: var(--ms-navy);
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--ms-navy);
+    color: var(--ms-white);
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FAQ Search Highlighting */
+mark.bg-warning {
+  background-color: var(--ms-gold) !important;
+  color: var(--ms-navy) !important;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Search Input Focus */
+#faqSearchInput:focus {
+  border-color: var(--ms-navy);
+  box-shadow: 0 0 0 0.2rem rgba(0, 40, 104, 0.25);
+}
+
+/* Clear Search Button */
+#clearSearchBtn:hover {
+  background-color: var(--ms-red);
+  border-color: var(--ms-red);
+  color: white;
+}
+
+/* FAQ Search Card */
+.card .card-body .input-group-text {
+  background-color: var(--ms-light-blue);
+  border-color: var(--ms-navy);
+  color: var(--ms-navy);
+}
+
+/* Utility Classes */
+.text-ms-red { color: var(--ms-red) !important; }
+.text-ms-navy { color: var(--ms-navy) !important; }
+.text-ms-gold { color: var(--ms-gold) !important; }
+.bg-ms-light-blue { background-color: var(--ms-light-blue) !important; }
+.bg-ms-light-red { background-color: var(--ms-light-red) !important; }

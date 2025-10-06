@@ -1,0 +1,239 @@
+using Microsoft.Data.Sqlite;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000", "file://")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseCors("AllowFrontend");
+app.UseAuthorization();
+app.MapControllers();
+
+// Initialize database
+InitializeDatabase();
+
+app.Run();
+
+void InitializeDatabase()
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    using var connection = new SqliteConnection(connectionString);
+    connection.Open();
+
+    // Create Resources table
+    var createResourcesTable = @"
+        CREATE TABLE IF NOT EXISTS Resources (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL,
+            Subject TEXT NOT NULL,
+            Description TEXT NOT NULL,
+            Type TEXT NOT NULL,
+            Difficulty TEXT NOT NULL,
+            EstimatedTime TEXT NOT NULL,
+            ContentUrl TEXT,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+    // Create Videos table
+    var createVideosTable = @"
+        CREATE TABLE IF NOT EXISTS Videos (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL,
+            Subject TEXT NOT NULL,
+            Description TEXT NOT NULL,
+            Duration TEXT NOT NULL,
+            Difficulty TEXT NOT NULL,
+            Instructor TEXT NOT NULL,
+            VideoUrl TEXT,
+            ThumbnailUrl TEXT,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+    // Create Certifications table
+    var createCertificationsTable = @"
+        CREATE TABLE IF NOT EXISTS Certifications (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL,
+            Subject TEXT NOT NULL,
+            Description TEXT NOT NULL,
+            Requirements TEXT NOT NULL,
+            EstimatedTime TEXT NOT NULL,
+            Difficulty TEXT NOT NULL,
+            Provider TEXT NOT NULL,
+            Validity TEXT NOT NULL,
+            Cost TEXT NOT NULL,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+    // Create Questions table (for AI chat)
+    var createQuestionsTable = @"
+        CREATE TABLE IF NOT EXISTS Questions (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Question TEXT NOT NULL,
+            Subject TEXT,
+            StudentLevel TEXT,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+    // Create AI Responses table
+    var createAIResponsesTable = @"
+        CREATE TABLE IF NOT EXISTS AIResponses (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            QuestionId INTEGER NOT NULL,
+            Response TEXT NOT NULL,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (QuestionId) REFERENCES Questions (Id)
+        )";
+
+    // Create Contacts table
+    var createContactsTable = @"
+        CREATE TABLE IF NOT EXISTS Contacts (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            FirstName TEXT NOT NULL,
+            LastName TEXT NOT NULL,
+            Email TEXT NOT NULL,
+            Subject TEXT NOT NULL,
+            Message TEXT NOT NULL,
+            Newsletter BOOLEAN NOT NULL DEFAULT 0,
+            Timestamp DATETIME NOT NULL,
+            IsRead BOOLEAN NOT NULL DEFAULT 0,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )";
+
+    var command = connection.CreateCommand();
+    
+    command.CommandText = createResourcesTable;
+    command.ExecuteNonQuery();
+    
+    command.CommandText = createVideosTable;
+    command.ExecuteNonQuery();
+    
+    command.CommandText = createCertificationsTable;
+    command.ExecuteNonQuery();
+    
+    command.CommandText = createQuestionsTable;
+    command.ExecuteNonQuery();
+    
+    command.CommandText = createAIResponsesTable;
+    command.ExecuteNonQuery();
+    
+    command.CommandText = createContactsTable;
+    command.ExecuteNonQuery();
+
+    // Insert sample data
+    InsertSampleData(connection);
+}
+
+void InsertSampleData(SqliteConnection connection)
+{
+    var command = connection.CreateCommand();
+
+    // Insert sample resources
+    var insertResource = @"
+        INSERT OR IGNORE INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime)
+        VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime)";
+
+    var resources = new[]
+    {
+        new { title = "Mississippi History: The Civil Rights Movement", subject = "History", description = "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.", type = "Study Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours" },
+        new { title = "Algebra Fundamentals", subject = "STEM", description = "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours" },
+        new { title = "Mississippi Literature Analysis", subject = "English", description = "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.", type = "Reading Material", difficulty = "Advanced", estimatedTime = "4-5 hours" },
+        new { title = "Biology: Mississippi Ecosystems", subject = "STEM", description = "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.", type = "Interactive Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours" },
+        new { title = "Grammar and Writing Skills", subject = "English", description = "Essential grammar rules, punctuation, and essay writing techniques for academic success.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours" },
+        new { title = "Mississippi Geography", subject = "History", description = "Comprehensive overview of Mississippi's geography, climate, and natural resources.", type = "Study Guide", difficulty = "Beginner", estimatedTime = "1-2 hours" }
+    };
+
+    foreach (var resource in resources)
+    {
+        command.CommandText = insertResource;
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@title", resource.title);
+        command.Parameters.AddWithValue("@subject", resource.subject);
+        command.Parameters.AddWithValue("@description", resource.description);
+        command.Parameters.AddWithValue("@type", resource.type);
+        command.Parameters.AddWithValue("@difficulty", resource.difficulty);
+        command.Parameters.AddWithValue("@estimatedTime", resource.estimatedTime);
+        command.ExecuteNonQuery();
+    }
+
+    // Insert sample videos
+    var insertVideo = @"
+        INSERT OR IGNORE INTO Videos (Title, Subject, Description, Duration, Difficulty, Instructor)
+        VALUES (@title, @subject, @description, @duration, @difficulty, @instructor)";
+
+    var videos = new[]
+    {
+        new { title = "Mississippi Civil Rights Movement: A Historical Overview", subject = "History", description = "Comprehensive overview of the Civil Rights Movement in Mississippi, featuring key events and figures.", duration = "45:30", difficulty = "Intermediate", instructor = "Dr. Sarah Johnson" },
+        new { title = "Algebra Basics: Solving Linear Equations", subject = "STEM", description = "Learn the fundamentals of solving linear equations with step-by-step examples and practice problems.", duration = "32:15", difficulty = "Beginner", instructor = "Prof. Michael Chen" },
+        new { title = "Literary Analysis: William Faulkner's 'The Sound and the Fury'", subject = "English", description = "Deep dive into Faulkner's masterpiece, exploring themes, narrative techniques, and literary significance.", duration = "58:45", difficulty = "Advanced", instructor = "Dr. Emily Williams" },
+        new { title = "Mississippi River Delta: Ecology and Conservation", subject = "STEM", description = "Explore the unique ecosystem of the Mississippi Delta and learn about conservation efforts.", duration = "38:20", difficulty = "Intermediate", instructor = "Dr. Robert Martinez" },
+        new { title = "Grammar Essentials: Subject-Verb Agreement", subject = "English", description = "Master subject-verb agreement rules with clear explanations and interactive exercises.", duration = "25:10", difficulty = "Beginner", instructor = "Ms. Lisa Thompson" },
+        new { title = "Mississippi Geography and Climate", subject = "History", description = "Comprehensive study of Mississippi's geography, climate patterns, and natural resources.", duration = "41:35", difficulty = "Beginner", instructor = "Dr. James Anderson" }
+    };
+
+    foreach (var video in videos)
+    {
+        command.CommandText = insertVideo;
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@title", video.title);
+        command.Parameters.AddWithValue("@subject", video.subject);
+        command.Parameters.AddWithValue("@description", video.description);
+        command.Parameters.AddWithValue("@duration", video.duration);
+        command.Parameters.AddWithValue("@difficulty", video.difficulty);
+        command.Parameters.AddWithValue("@instructor", video.instructor);
+        command.ExecuteNonQuery();
+    }
+
+    // Insert sample certifications
+    var insertCertification = @"
+        INSERT OR IGNORE INTO Certifications (Title, Subject, Description, Requirements, EstimatedTime, Difficulty, Provider, Validity, Cost)
+        VALUES (@title, @subject, @description, @requirements, @estimatedTime, @difficulty, @provider, @validity, @cost)";
+
+    var certifications = new[]
+    {
+        new { title = "Mississippi History Scholar", subject = "History", description = "Demonstrate mastery of Mississippi history from pre-colonial times to the present day.", requirements = "Complete 20 history modules, pass final exam with 85% or higher", estimatedTime = "40-50 hours", difficulty = "Advanced", provider = "Mississippi Department of Education", validity = "Lifetime", cost = "Free" },
+        new { title = "Algebra Fundamentals Certificate", subject = "STEM", description = "Prove your understanding of basic algebraic concepts and problem-solving techniques.", requirements = "Complete algebra coursework, solve 50 practice problems, pass assessment", estimatedTime = "30-40 hours", difficulty = "Intermediate", provider = "Mississippi STEM Academy", validity = "2 years", cost = "Free" },
+        new { title = "Advanced Literary Analysis", subject = "English", description = "Showcase your ability to analyze literature, particularly Mississippi authors.", requirements = "Analyze 10 literary works, write 3 essays, complete peer review", estimatedTime = "35-45 hours", difficulty = "Advanced", provider = "Mississippi Writers' Guild", validity = "3 years", cost = "$25" },
+        new { title = "Environmental Science Explorer", subject = "STEM", description = "Learn about Mississippi's unique ecosystems and environmental challenges.", requirements = "Complete field study, research project, environmental impact assessment", estimatedTime = "25-35 hours", difficulty = "Intermediate", provider = "Mississippi Wildlife Federation", validity = "2 years", cost = "Free" },
+        new { title = "Grammar and Composition Master", subject = "English", description = "Master essential grammar rules and composition techniques for academic writing.", requirements = "Complete grammar modules, write 5 essays, pass writing assessment", estimatedTime = "20-30 hours", difficulty = "Beginner", provider = "Mississippi Language Arts Council", validity = "2 years", cost = "Free" },
+        new { title = "Mississippi Geography Expert", subject = "History", description = "Comprehensive understanding of Mississippi's geography, climate, and natural resources.", requirements = "Study state geography, complete mapping exercises, pass geography test", estimatedTime = "15-25 hours", difficulty = "Beginner", provider = "Mississippi Geographic Society", validity = "Lifetime", cost = "Free" }
+    };
+
+    foreach (var cert in certifications)
+    {
+        command.CommandText = insertCertification;
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@title", cert.title);
+        command.Parameters.AddWithValue("@subject", cert.subject);
+        command.Parameters.AddWithValue("@description", cert.description);
+        command.Parameters.AddWithValue("@requirements", cert.requirements);
+        command.Parameters.AddWithValue("@estimatedTime", cert.estimatedTime);
+        command.Parameters.AddWithValue("@difficulty", cert.difficulty);
+        command.Parameters.AddWithValue("@provider", cert.provider);
+        command.Parameters.AddWithValue("@validity", cert.validity);
+        command.Parameters.AddWithValue("@cost", cert.cost);
+        command.ExecuteNonQuery();
+    }
+}
