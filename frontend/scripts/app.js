@@ -207,8 +207,10 @@ document.addEventListener('DOMContentLoaded', function() {
     app.registerPageModule('videos', videosPage);
   }
   if (window.CertificationsPage) {
-    certificationsPage = new window.CertificationsPage(app);
-    app.registerPageModule('certifications', certificationsPage);
+    const certModule = new window.CertificationsPage(app);
+    app.registerPageModule('certifications', certModule);
+    // Set global variable for onclick handlers
+    window.certificationsPage = certModule;
   }
   if (window.AIHelperPage) {
     aiHelperPage = new window.AIHelperPage(app);
