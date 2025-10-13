@@ -2,7 +2,7 @@
 class App {
   constructor() {
     this.currentPage = 'home';
-    this.apiBaseUrl = 'http://localhost:5001/api';
+    this.apiBaseUrl = 'http://localhost:5000/api';
     this.pageModules = {};
     this.init();
   }
