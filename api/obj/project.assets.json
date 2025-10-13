@@ -739,19 +739,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tech\\.nuget\\packages\\": {}
+    "C:\\Users\\emily\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tech\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\QualityEducationAPI.csproj",
+      "projectUniqueName": "C:\\Users\\emily\\OneDrive\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\QualityEducationAPI.csproj",
       "projectName": "QualityEducationAPI",
-      "projectPath": "C:\\Users\\tech\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\QualityEducationAPI.csproj",
-      "packagesPath": "C:\\Users\\tech\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tech\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\obj\\",
+      "projectPath": "C:\\Users\\emily\\OneDrive\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\QualityEducationAPI.csproj",
+      "packagesPath": "C:\\Users\\emily\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\emily\\OneDrive\\Documents\\MIS321\\AIs-comp-Group-project-2-\\api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\tech\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\emily\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -773,8 +773,9 @@
       "restoreAuditProperties": {
         "enableAudit": "true",
         "auditLevel": "low",
-        "auditMode": "direct"
-      }
+        "auditMode": "all"
+      },
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net8.0": {
@@ -808,7 +809,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.413/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
