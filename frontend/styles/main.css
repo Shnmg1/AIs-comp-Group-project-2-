@@ -256,6 +256,69 @@ mark.bg-warning {
   color: var(--ms-navy);
 }
 
+/* School Level Buttons */
+.school-level-btn {
+  flex: 1;
+  height: 120px;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  background-color: white;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.school-level-btn:hover {
+  border-color: var(--ms-navy);
+  color: var(--ms-navy);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.school-level-btn.active {
+  background-color: var(--ms-navy);
+  border-color: var(--ms-navy);
+  color: white;
+}
+
+.school-level-btn.active:hover {
+  background-color: var(--ms-navy);
+  border-color: var(--ms-navy);
+  color: white;
+}
+
+/* Grade Buttons */
+.grade-btn {
+  min-width: 165px;
+  height: 38px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--ms-navy);
+  border: 1px solid #dee2e6;
+}
+
+.grade-btn:hover {
+  border-color: var(--ms-navy);
+  color: var(--ms-navy);
+}
+
+.grade-btn.active {
+  background-color: var(--ms-navy);
+  border-color: var(--ms-navy);
+  color: white;
+}
+
+/* Grade Buttons Container - Evenly distribute across card */
+#gradeButtons {
+  justify-content: space-between;
+  gap: 5px;
+}
+
 /* Utility Classes */
 .text-ms-red { color: var(--ms-red) !important; }
 .text-ms-navy { color: var(--ms-navy) !important; }
