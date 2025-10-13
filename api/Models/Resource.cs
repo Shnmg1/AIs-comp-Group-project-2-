@@ -10,6 +10,8 @@ namespace QualityEducationAPI.Models
         public string Difficulty { get; set; } = string.Empty;
         public string EstimatedTime { get; set; } = string.Empty;
         public string? ContentUrl { get; set; }
+        public string SchoolLevel { get; set; } = string.Empty;
+        public string Grade { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 
@@ -22,5 +24,7 @@ namespace QualityEducationAPI.Models
         public string Difficulty { get; set; } = string.Empty;
         public string EstimatedTime { get; set; } = string.Empty;
         public string? ContentUrl { get; set; }
+        public string SchoolLevel { get; set; } = string.Empty;
+        public string Grade { get; set; } = string.Empty;
     }
 }
