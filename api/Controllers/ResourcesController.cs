@@ -16,14 +16,14 @@ namespace QualityEducationAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Resource>>> GetResources([FromQuery] string? subject = null, [FromQuery] string? search = null)
+        public async Task<ActionResult<IEnumerable<Resource>>> GetResources([FromQuery] string? subject = null, [FromQuery] string? search = null, [FromQuery] string? schoolLevel = null, [FromQuery] string? grade = null)
         {
             var resources = new List<Resource>();
             
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = "SELECT Id, Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, CreatedAt FROM Resources WHERE 1=1";
+            var query = "SELECT Id, Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, SchoolLevel, Grade, CreatedAt FROM Resources WHERE 1=1";
             var parameters = new List<SqliteParameter>();
 
             if (!string.IsNullOrEmpty(subject) && subject != "all")
@@ -36,6 +36,18 @@ namespace QualityEducationAPI.Controllers
             {
                 query += " AND (Title LIKE @search OR Description LIKE @search)";
                 parameters.Add(new SqliteParameter("@search", $"%{search}%"));
+            }
+
+            if (!string.IsNullOrEmpty(schoolLevel) && schoolLevel != "all")
+            {
+                query += " AND SchoolLevel = @schoolLevel";
+                parameters.Add(new SqliteParameter("@schoolLevel", schoolLevel));
+            }
+
+            if (!string.IsNullOrEmpty(grade) && grade != "all")
+            {
+                query += " AND Grade = @grade";
+                parameters.Add(new SqliteParameter("@grade", grade));
             }
 
             query += " ORDER BY CreatedAt DESC";
@@ -56,7 +68,9 @@ namespace QualityEducationAPI.Controllers
                     Difficulty = reader.GetString(5),
                     EstimatedTime = reader.GetString(6),
                     ContentUrl = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    CreatedAt = reader.GetDateTime(8)
+                    SchoolLevel = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                    Grade = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                    CreatedAt = reader.GetDateTime(10)
                 });
             }
 
@@ -69,7 +83,7 @@ namespace QualityEducationAPI.Controllers
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = "SELECT Id, Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, CreatedAt FROM Resources WHERE Id = @id";
+            var query = "SELECT Id, Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, SchoolLevel, Grade, CreatedAt FROM Resources WHERE Id = @id";
             
             using var command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
@@ -87,7 +101,9 @@ namespace QualityEducationAPI.Controllers
                     Difficulty = reader.GetString(5),
                     EstimatedTime = reader.GetString(6),
                     ContentUrl = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    CreatedAt = reader.GetDateTime(8)
+                    SchoolLevel = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                    Grade = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                    CreatedAt = reader.GetDateTime(10)
                 };
 
                 return Ok(resource);
@@ -103,8 +119,8 @@ namespace QualityEducationAPI.Controllers
             await connection.OpenAsync();
 
             var query = @"
-                INSERT INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, CreatedAt)
-                VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime, @contentUrl, @createdAt);
+                INSERT INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime, ContentUrl, SchoolLevel, Grade, CreatedAt)
+                VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime, @contentUrl, @schoolLevel, @grade, @createdAt);
                 SELECT last_insert_rowid();";
 
             using var command = new SqliteCommand(query, connection);
@@ -115,6 +131,8 @@ namespace QualityEducationAPI.Controllers
             command.Parameters.AddWithValue("@difficulty", request.Difficulty);
             command.Parameters.AddWithValue("@estimatedTime", request.EstimatedTime);
             command.Parameters.AddWithValue("@contentUrl", request.ContentUrl ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@schoolLevel", request.SchoolLevel);
+            command.Parameters.AddWithValue("@grade", request.Grade);
             command.Parameters.AddWithValue("@createdAt", DateTime.UtcNow);
 
             var newId = await command.ExecuteScalarAsync();
@@ -129,6 +147,8 @@ namespace QualityEducationAPI.Controllers
                 Difficulty = request.Difficulty,
                 EstimatedTime = request.EstimatedTime,
                 ContentUrl = request.ContentUrl,
+                SchoolLevel = request.SchoolLevel,
+                Grade = request.Grade,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -142,7 +162,8 @@ namespace QualityEducationAPI.Controllers
             var query = @"
                 UPDATE Resources 
                 SET Title = @title, Subject = @subject, Description = @description, 
-                    Type = @type, Difficulty = @difficulty, EstimatedTime = @estimatedTime, ContentUrl = @contentUrl
+                    Type = @type, Difficulty = @difficulty, EstimatedTime = @estimatedTime, ContentUrl = @contentUrl,
+                    SchoolLevel = @schoolLevel, Grade = @grade
                 WHERE Id = @id";
 
             using var command = new SqliteCommand(query, connection);
@@ -154,6 +175,8 @@ namespace QualityEducationAPI.Controllers
             command.Parameters.AddWithValue("@difficulty", request.Difficulty);
             command.Parameters.AddWithValue("@estimatedTime", request.EstimatedTime);
             command.Parameters.AddWithValue("@contentUrl", request.ContentUrl ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@schoolLevel", request.SchoolLevel);
+            command.Parameters.AddWithValue("@grade", request.Grade);
 
             var rowsAffected = await command.ExecuteNonQueryAsync();
             
