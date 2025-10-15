@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000", "file://")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -53,8 +53,34 @@ void InitializeDatabase()
             Difficulty TEXT NOT NULL,
             EstimatedTime TEXT NOT NULL,
             ContentUrl TEXT,
+            SchoolLevel TEXT NOT NULL DEFAULT '',
+            Grade TEXT NOT NULL DEFAULT '',
             CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )";
+
+    // Add SchoolLevel and Grade columns if they don't exist
+    var addSchoolLevelColumn = "ALTER TABLE Resources ADD COLUMN SchoolLevel TEXT DEFAULT ''";
+    var addGradeColumn = "ALTER TABLE Resources ADD COLUMN Grade TEXT DEFAULT ''";
+    
+    try
+    {
+        using var addSchoolLevelCommand = new SqliteCommand(addSchoolLevelColumn, connection);
+        addSchoolLevelCommand.ExecuteNonQuery();
+    }
+    catch (SqliteException)
+    {
+        // Column already exists, ignore
+    }
+    
+    try
+    {
+        using var addGradeCommand = new SqliteCommand(addGradeColumn, connection);
+        addGradeCommand.ExecuteNonQuery();
+    }
+    catch (SqliteException)
+    {
+        // Column already exists, ignore
+    }
 
     // Create Videos table
     var createVideosTable = @"

@@ -187,6 +187,9 @@ class App {
 // Global app instance
 let app;
 
+// Global page instances for onclick handlers
+let resourcesPage, videosPage, certificationsPage, aiHelperPage, helpPage;
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   app = new App();
@@ -196,10 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
     app.registerPageModule('home', new window.HomePage(app));
   }
   if (window.ResourcesPage) {
-    app.registerPageModule('resources', new window.ResourcesPage(app));
+    resourcesPage = new window.ResourcesPage(app);
+    app.registerPageModule('resources', resourcesPage);
   }
   if (window.VideosPage) {
-    app.registerPageModule('videos', new window.VideosPage(app));
+    videosPage = new window.VideosPage(app);
+    app.registerPageModule('videos', videosPage);
   }
   if (window.CertificationsPage) {
     const certModule = new window.CertificationsPage(app);
@@ -208,10 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.certificationsPage = certModule;
   }
   if (window.AIHelperPage) {
-    app.registerPageModule('aiHelper', new window.AIHelperPage(app));
+    aiHelperPage = new window.AIHelperPage(app);
+    app.registerPageModule('aiHelper', aiHelperPage);
   }
   if (window.HelpPage) {
-    app.registerPageModule('help', new window.HelpPage(app));
+    helpPage = new window.HelpPage(app);
+    app.registerPageModule('help', helpPage);
   }
   
   // Now that all modules are registered, show the home page

@@ -1,125 +1,60 @@
-// Resources Page Module
+// Resources Page Module - Comprehensive Filter Interface
 class ResourcesPage {
   constructor(app) {
     this.app = app;
     this.resources = [];
     this.filteredResources = [];
+    this.currentSchoolLevel = 'all';
+    this.currentGrade = 'all';
     this.currentSubject = 'all';
+    this.currentResourceType = 'all';
+    this.currentSort = 'newest';
+    this.searchQuery = '';
   }
 
   async render() {
-    this.app.showLoading();
+    console.log('ResourcesPage render() called');
     
+    // Load resources from API with fallback to mock data
     try {
-      await this.loadResources();
-      this.displayResources();
-    } catch (error) {
-      console.error('Error loading resources:', error);
-      this.app.showError('Failed to load educational resources. Please try again later.');
-    }
-  }
-
-  async loadResources() {
-    // For now, we'll use mock data. Later this will be replaced with API calls
-    this.resources = [
-      {
-        id: 1,
-        title: "Mississippi History: The Civil Rights Movement",
-        subject: "History",
-        description: "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.",
-        type: "Study Guide",
-        difficulty: "Intermediate",
-        estimatedTime: "2-3 hours"
-      },
-      {
-        id: 2,
-        title: "Algebra Fundamentals",
-        subject: "STEM",
-        description: "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.",
-        type: "Practice Exercises",
-        difficulty: "Beginner",
-        estimatedTime: "3-4 hours"
-      },
-      {
-        id: 3,
-        title: "Mississippi Literature Analysis",
-        subject: "English",
-        description: "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.",
-        type: "Reading Material",
-        difficulty: "Advanced",
-        estimatedTime: "4-5 hours"
-      },
-      {
-        id: 4,
-        title: "Biology: Mississippi Ecosystems",
-        subject: "STEM",
-        description: "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.",
-        type: "Interactive Guide",
-        difficulty: "Intermediate",
-        estimatedTime: "2-3 hours"
-      },
-      {
-        id: 5,
-        title: "Grammar and Writing Skills",
-        subject: "English",
-        description: "Essential grammar rules, punctuation, and essay writing techniques for academic success.",
-        type: "Practice Exercises",
-        difficulty: "Beginner",
-        estimatedTime: "3-4 hours"
-      },
-      {
-        id: 6,
-        title: "Mississippi Geography",
-        subject: "History",
-        description: "Comprehensive overview of Mississippi's geography, climate, and natural resources.",
-        type: "Study Guide",
-        difficulty: "Beginner",
-        estimatedTime: "1-2 hours"
+      const response = await fetch('http://localhost:5000/api/resources');
+      if (response.ok) {
+        this.resources = await response.json();
+        console.log('API resources loaded:', this.resources.length);
+      } else {
+        throw new Error('API not available');
       }
-    ];
-    
+    } catch (error) {
+      console.log('Using mock resources due to API error:', error.message);
+      this.resources = this.getMockResources();
+    }
+
     this.filteredResources = [...this.resources];
+    this.displayResources();
   }
 
   displayResources() {
     const app = document.getElementById('app');
     app.innerHTML = `
       <div class="fade-in">
-        <!-- Page Header -->
-        <div class="container mt-4">
-          <div class="row">
-            <div class="col-12">
-              <h1 class="display-5 fw-bold text-ms-navy mb-3">
-                <i class="bi bi-book-fill me-2"></i>Educational Resources
-              </h1>
-              <p class="lead text-muted">Explore comprehensive learning materials for English, History, and STEM subjects</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="container mb-4">
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">
-                    <i class="bi bi-funnel-fill me-2"></i>Filter Resources
-                  </h5>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="subjectFilter" class="form-label">Subject</label>
-                      <select class="form-select" id="subjectFilter" onchange="resourcesPage.filterBySubject(this.value)">
-                        <option value="all">All Subjects</option>
-                        <option value="English">English</option>
-                        <option value="History">History</option>
-                        <option value="STEM">STEM</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label for="searchInput" class="form-label">Search</label>
-                      <input type="text" class="form-control" id="searchInput" placeholder="Search resources..." onkeyup="resourcesPage.searchResources(this.value)">
-                    </div>
+        <!-- Header -->
+        <div class="hero-section bg-gradient-primary text-white py-5">
+          <div class="container">
+            <div class="row align-items-center">
+              <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                  <i class="bi bi-book me-3"></i>Educational Resources
+                </h1>
+                <p class="lead mb-4">
+                  Discover comprehensive educational resources aligned with Mississippi standards. 
+                  Filter by school level, grade, subject, and resource type to find exactly what you need.
+                </p>
+              </div>
+              <div class="col-lg-4 text-center">
+                <div class="hero-stats">
+                  <div class="stat-item">
+                    <h3 class="fw-bold">${this.resources.length}</h3>
+                    <p class="mb-0">Total Resources</p>
                   </div>
                 </div>
               </div>
@@ -127,91 +62,600 @@ class ResourcesPage {
           </div>
         </div>
 
-        <!-- Resources Grid -->
-        <div class="container mb-5">
-          <div class="row" id="resourcesGrid">
-            ${this.renderResourcesGrid()}
+        <!-- Main Content -->
+        <div class="container my-5">
+          <!-- Filter Interface -->
+          <div class="filter-interface mb-5">
+            <!-- School Level Tabs -->
+            <div class="school-level-tabs mb-4">
+              <h4 class="filter-section-title mb-3">
+                <i class="bi bi-mortarboard me-2"></i>Select School Level
+              </h4>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <button class="school-level-tab ${this.currentSchoolLevel === 'Elementary' ? 'active' : ''}" 
+                          onclick="resourcesPage.selectSchoolLevel('Elementary')">
+                    <i class="bi bi-house-fill"></i>
+                    <div class="tab-content">
+                      <h5>Elementary</h5>
+                      <span>K - 5th Grade</span>
+                    </div>
+                  </button>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <button class="school-level-tab ${this.currentSchoolLevel === 'Middle School' ? 'active' : ''}" 
+                          onclick="resourcesPage.selectSchoolLevel('Middle School')">
+                    <i class="bi bi-calculator"></i>
+                    <div class="tab-content">
+                      <h5>Middle School</h5>
+                      <span>6th - 8th Grade</span>
+                    </div>
+                  </button>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <button class="school-level-tab ${this.currentSchoolLevel === 'High School' ? 'active' : ''}" 
+                          onclick="resourcesPage.selectSchoolLevel('High School')">
+                    <i class="bi bi-mortarboard"></i>
+                    <div class="tab-content">
+                      <h5>High School</h5>
+                      <span>9th - 12th Grade</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Grade Filter -->
+            <div class="grade-filter mb-4" id="gradeFilter" style="display: ${this.currentSchoolLevel === 'all' ? 'none' : 'block'};">
+              <h4 class="filter-section-title mb-3">
+                <i class="bi bi-123 me-2"></i>Select Grade
+              </h4>
+              <div class="grade-buttons">
+                ${this.getGradeButtons()}
+              </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls mb-4">
+              <div class="row">
+                <!-- Subject Filter -->
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <label class="filter-label">
+                    <i class="bi bi-book me-1"></i>Subject
+                  </label>
+                  <select class="filter-dropdown" id="subjectFilter" onchange="resourcesPage.handleSubjectFilter()">
+                    <option value="all">All Subjects</option>
+                    <option value="English">English</option>
+                    <option value="History">History</option>
+                    <option value="STEM">STEM (Science & Math)</option>
+                  </select>
+                </div>
+
+                <!-- Resource Type Filter -->
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <label class="filter-label">
+                    <i class="bi bi-collection me-1"></i>Resource Type
+                  </label>
+                  <select class="filter-dropdown" id="resourceTypeFilter" onchange="resourcesPage.handleResourceTypeFilter()">
+                    <option value="all">All Types</option>
+                    <option value="Interactive Practice">Interactive Practice</option>
+                    <option value="Interactive Game">Interactive Game</option>
+                    <option value="Study Guide">Study Guide</option>
+                    <option value="Reading Material">Reading Material</option>
+                    <option value="Video">Video</option>
+                    <option value="Article">Article</option>
+                  </select>
+                </div>
+
+                <!-- Search Box -->
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <label class="filter-label">
+                    <i class="bi bi-search me-1"></i>Search
+                  </label>
+                  <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" 
+                           placeholder="Search by keywords, topic, or subject..." 
+                           value="${this.searchQuery}"
+                           onkeyup="resourcesPage.handleSearch()">
+                    <i class="bi bi-search search-icon"></i>
+                  </div>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <label class="filter-label">
+                    <i class="bi bi-sort-down me-1"></i>Sort By
+                  </label>
+                  <select class="filter-dropdown" id="sortFilter" onchange="resourcesPage.handleSortFilter()">
+                    <option value="newest">Newest</option>
+                    <option value="popular">Popular</option>
+                    <option value="alphabetical">Alphabetical</option>
+                    <option value="grade">Grade Level</option>
+                    <option value="subject">Subject</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <button class="clear-filters-btn" onclick="resourcesPage.clearAllFilters()">
+                    <i class="bi bi-x-circle me-2"></i>Clear All Filters
+                  </button>
+                </div>
+                <div class="col-md-6 text-md-end">
+                  <div class="results-count">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Showing <span class="count-number">${this.filteredResources.length}</span> of <span class="total-number">${this.resources.length}</span> resources
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resources Grid -->
+          <div class="resources-grid">
+            ${this.getResourcesGrid()}
           </div>
         </div>
       </div>
     `;
+
+    // Apply initial filters after HTML is rendered
+    setTimeout(() => {
+      this.applyFilters();
+    }, 100);
   }
 
-  renderResourcesGrid() {
+  getGradeButtons() {
+    const grades = this.getGradesForSchoolLevel(this.currentSchoolLevel);
+    return grades.map(grade => `
+      <button class="grade-btn ${this.currentGrade === grade ? 'active' : ''}" 
+              onclick="resourcesPage.selectGrade('${grade}')">
+        ${grade}
+      </button>
+    `).join('');
+  }
+
+  getGradesForSchoolLevel(schoolLevel) {
+    switch(schoolLevel) {
+      case 'Elementary':
+        return ['Pre-K', 'K', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'];
+      case 'Middle School':
+        return ['6th Grade', '7th Grade', '8th Grade'];
+      case 'High School':
+        return ['9th Grade', '10th Grade', '11th Grade', '12th Grade'];
+      default:
+        return [];
+    }
+  }
+
+  getResourcesGrid() {
     if (this.filteredResources.length === 0) {
       return `
-        <div class="col-12">
+        <div class="no-results">
           <div class="text-center py-5">
-            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
-            <h4 class="text-muted mt-3">No resources found</h4>
-            <p class="text-muted">Try adjusting your search criteria or browse all resources.</p>
+            <i class="bi bi-search display-1 text-muted mb-3"></i>
+            <h3 class="text-muted">No resources found</h3>
+            <p class="text-muted">Try adjusting your filters or search terms to find what you're looking for.</p>
+            <button class="btn btn-primary" onclick="resourcesPage.clearAllFilters()">
+              <i class="bi bi-arrow-clockwise me-2"></i>Clear All Filters
+            </button>
           </div>
         </div>
       `;
     }
 
-    return this.filteredResources.map(resource => `
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="badge bg-primary">${resource.subject}</span>
-            <span class="badge bg-secondary">${resource.type}</span>
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">${resource.title}</h5>
-            <p class="card-text">${resource.description}</p>
-            <div class="mb-3">
-              <small class="text-muted">
-                <i class="bi bi-clock me-1"></i>${resource.estimatedTime} • 
-                <i class="bi bi-bar-chart me-1"></i>${resource.difficulty}
-              </small>
+    return `
+      <div class="row">
+        ${this.filteredResources.map(resource => `
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="resource-card h-100">
+              <div class="resource-header">
+                <div class="resource-badges">
+                  <span class="badge badge-subject">${resource.subject}</span>
+                  <span class="badge badge-grade">Grade ${resource.grade}</span>
+                </div>
+                <div class="resource-type">
+                  <i class="bi bi-${this.getResourceTypeIcon(resource.type)}"></i>
+                </div>
+              </div>
+              <div class="resource-body">
+                <h5 class="resource-title">${resource.title}</h5>
+                <p class="resource-description">${resource.description}</p>
+                <div class="resource-meta">
+                  <div class="meta-item">
+                    <i class="bi bi-clock me-1"></i>
+                    <span>${resource.estimatedTime}</span>
+                  </div>
+                  <div class="meta-item">
+                    <i class="bi bi-star me-1"></i>
+                    <span>${resource.difficulty}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="resource-footer">
+                <button class="btn btn-primary w-100" onclick="resourcesPage.openResource(${resource.id})">
+                  <i class="bi bi-play-fill me-2"></i>Start Learning
+                </button>
+              </div>
             </div>
           </div>
-          <div class="card-footer">
-            <button class="btn btn-primary w-100" onclick="resourcesPage.openResource(${resource.id})">
-              <i class="bi bi-arrow-right-circle-fill me-2"></i>Access Resource
-            </button>
-          </div>
-        </div>
+        `).join('')}
       </div>
-    `).join('');
+    `;
   }
 
-  filterBySubject(subject) {
-    this.currentSubject = subject;
+  getResourceTypeIcon(type) {
+    const icons = {
+      'Interactive Practice': 'pencil-square',
+      'Interactive Game': 'controller',
+      'Study Guide': 'book',
+      'Reading Material': 'file-text',
+      'Video': 'play-circle',
+      'Article': 'newspaper',
+      'Worksheet': 'file-earmark-text',
+      'Assessment': 'clipboard-check'
+    };
+    return icons[type] || 'file';
+  }
+
+  // Filter Methods
+  selectSchoolLevel(level) {
+    this.currentSchoolLevel = this.currentSchoolLevel === level ? 'all' : level;
+    this.currentGrade = 'all'; // Reset grade when changing school level
+    this.applyFilters();
+    this.displayResources();
+  }
+
+  selectGrade(grade) {
+    this.currentGrade = this.currentGrade === grade ? 'all' : grade;
+    this.applyFilters();
+    this.displayResources();
+  }
+
+  handleSubjectFilter() {
+    const filter = document.getElementById('subjectFilter');
+    this.currentSubject = filter.value;
     this.applyFilters();
   }
 
-  searchResources(query) {
-    this.searchQuery = query.toLowerCase();
+  handleResourceTypeFilter() {
+    const filter = document.getElementById('resourceTypeFilter');
+    this.currentResourceType = filter.value;
     this.applyFilters();
+  }
+
+  handleSearch() {
+    const searchInput = document.getElementById('searchInput');
+    this.searchQuery = searchInput.value.toLowerCase();
+    this.applyFilters();
+  }
+
+  handleSortFilter() {
+    const filter = document.getElementById('sortFilter');
+    this.currentSort = filter.value;
+    this.sortResources();
+  }
+
+  clearAllFilters() {
+    this.currentSchoolLevel = 'all';
+    this.currentGrade = 'all';
+    this.currentSubject = 'all';
+    this.currentResourceType = 'all';
+    this.currentSort = 'newest';
+    this.searchQuery = '';
+    
+    // Reset form elements
+    if (document.getElementById('subjectFilter')) {
+      document.getElementById('subjectFilter').value = 'all';
+    }
+    if (document.getElementById('resourceTypeFilter')) {
+      document.getElementById('resourceTypeFilter').value = 'all';
+    }
+    if (document.getElementById('sortFilter')) {
+      document.getElementById('sortFilter').value = 'newest';
+    }
+    if (document.getElementById('searchInput')) {
+      document.getElementById('searchInput').value = '';
+    }
+    
+    this.applyFilters();
+    this.displayResources();
   }
 
   applyFilters() {
-    this.filteredResources = this.resources.filter(resource => {
-      const matchesSubject = this.currentSubject === 'all' || resource.subject === this.currentSubject;
-      const matchesSearch = !this.searchQuery || 
-        resource.title.toLowerCase().includes(this.searchQuery) ||
-        resource.description.toLowerCase().includes(this.searchQuery);
-      
-      return matchesSubject && matchesSearch;
-    });
+    let filtered = [...this.resources];
 
-    // Update the resources grid
-    const grid = document.getElementById('resourcesGrid');
-    if (grid) {
-      grid.innerHTML = this.renderResourcesGrid();
+    // Apply school level filter
+    if (this.currentSchoolLevel !== 'all') {
+      filtered = filtered.filter(resource => resource.schoolLevel === this.currentSchoolLevel);
     }
+
+    // Apply grade filter
+    if (this.currentGrade !== 'all') {
+      filtered = filtered.filter(resource => resource.grade === this.currentGrade);
+    }
+
+    // Apply subject filter
+    if (this.currentSubject !== 'all') {
+      if (this.currentSubject === 'STEM') {
+        filtered = filtered.filter(resource => 
+          resource.subject === 'STEM' || 
+          resource.subject === 'Science' || 
+          resource.subject === 'Math'
+        );
+      } else {
+        filtered = filtered.filter(resource => resource.subject === this.currentSubject);
+      }
+    }
+
+    // Apply resource type filter
+    if (this.currentResourceType !== 'all') {
+      filtered = filtered.filter(resource => resource.type === this.currentResourceType);
+    }
+
+    // Apply search filter
+    if (this.searchQuery) {
+      filtered = filtered.filter(resource => 
+        resource.title.toLowerCase().includes(this.searchQuery) ||
+        resource.description.toLowerCase().includes(this.searchQuery) ||
+        resource.subject.toLowerCase().includes(this.searchQuery) ||
+        (this.searchQuery.includes('math') && resource.subject === 'STEM') ||
+        (this.searchQuery.includes('science') && resource.subject === 'STEM')
+      );
+    }
+
+    this.filteredResources = filtered;
+    this.sortResources();
+    this.updateResultsCount();
+  }
+
+  sortResources() {
+    this.filteredResources.sort((a, b) => {
+      switch (this.currentSort) {
+        case 'newest':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'popular':
+          return (b.popularity || 0) - (a.popularity || 0);
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
+        case 'grade':
+          return this.getGradeOrder(a.grade) - this.getGradeOrder(b.grade);
+        case 'subject':
+          return a.subject.localeCompare(b.subject);
+        default:
+          return 0;
+      }
+    });
+  }
+
+  getGradeOrder(grade) {
+    const order = {
+      'Pre-K': -1, 'K': 0, '1st Grade': 1, '2nd Grade': 2, '3rd Grade': 3, '4th Grade': 4, '5th Grade': 5,
+      '6th Grade': 6, '7th Grade': 7, '8th Grade': 8, '9th Grade': 9, '10th Grade': 10,
+      '11th Grade': 11, '12th Grade': 12
+    };
+    return order[grade] || 999;
+  }
+
+  updateResultsCount() {
+    const countElement = document.querySelector('.count-number');
+    const totalElement = document.querySelector('.total-number');
+    if (countElement) countElement.textContent = this.filteredResources.length;
+    if (totalElement) totalElement.textContent = this.resources.length;
   }
 
   openResource(resourceId) {
     const resource = this.resources.find(r => r.id === resourceId);
-    if (resource) {
-      // For now, show an alert. Later this will open the actual resource
-      alert(`Opening resource: ${resource.title}\n\nThis feature will be implemented with the backend integration.`);
+    if (resource && resource.contentUrl) {
+      window.open(resource.contentUrl, '_blank');
     }
+  }
+
+  getMockResources() {
+    return [
+      {
+        id: 1,
+        title: "Pre-K: Count Pictures Up to 3",
+        subject: "STEM",
+        description: "Count pictures up to 3",
+        type: "Interactive Practice",
+        difficulty: "Beginner",
+        estimatedTime: "5-10 minutes",
+        contentUrl: "https://www.ixl.com/math/pre-k/count-pictures-up-to-3",
+        schoolLevel: "Elementary",
+        grade: "Pre-K",
+        createdAt: new Date().toISOString(),
+        popularity: 98
+      },
+      {
+        id: 2,
+        title: "K: Count Blocks Up to 10",
+        subject: "STEM",
+        description: "Count blocks up to 10",
+        type: "Interactive Practice",
+        difficulty: "Beginner",
+        estimatedTime: "10-15 minutes",
+        contentUrl: "https://www.ixl.com/math/kindergarten/count-blocks-up-to-10",
+        schoolLevel: "Elementary",
+        grade: "K",
+        createdAt: new Date().toISOString(),
+        popularity: 95
+      },
+      {
+        id: 3,
+        title: "1st Grade: Addition Facts",
+        subject: "STEM",
+        description: "Practice addition facts up to 20",
+        type: "Interactive Game",
+        difficulty: "Beginner",
+        estimatedTime: "15-20 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-1/addition-facts",
+        schoolLevel: "Elementary",
+        grade: "1st Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 88
+      },
+      {
+        id: 4,
+        title: "2nd Grade: Reading Comprehension",
+        subject: "English",
+        description: "Improve reading comprehension skills",
+        type: "Reading Material",
+        difficulty: "Intermediate",
+        estimatedTime: "20-25 minutes",
+        contentUrl: "https://www.ixl.com/ela/grade-2/reading-comprehension",
+        schoolLevel: "Elementary",
+        grade: "2nd Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 92
+      },
+      {
+        id: 5,
+        title: "3rd Grade: Multiplication Tables",
+        subject: "STEM",
+        description: "Master multiplication tables 1-12",
+        type: "Interactive Practice",
+        difficulty: "Intermediate",
+        estimatedTime: "25-30 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-3/multiplication-tables",
+        schoolLevel: "Elementary",
+        grade: "3rd Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 90
+      },
+      {
+        id: 6,
+        title: "4th Grade: Fractions",
+        subject: "STEM",
+        description: "Understand fractions and decimals",
+        type: "Study Guide",
+        difficulty: "Intermediate",
+        estimatedTime: "30-35 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-4/fractions",
+        schoolLevel: "Elementary",
+        grade: "4th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 85
+      },
+      {
+        id: 7,
+        title: "5th Grade: Science - Ecosystems",
+        subject: "STEM",
+        description: "Learn about different ecosystems",
+        type: "Video",
+        difficulty: "Intermediate",
+        estimatedTime: "15-20 minutes",
+        contentUrl: "https://www.youtube.com/watch?v=example",
+        schoolLevel: "Elementary",
+        grade: "5th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 87
+      },
+      {
+        id: 8,
+        title: "6th Grade: Ancient Civilizations",
+        subject: "History",
+        description: "Explore ancient civilizations",
+        type: "Article",
+        difficulty: "Intermediate",
+        estimatedTime: "20-25 minutes",
+        contentUrl: "https://example.com/ancient-civilizations",
+        schoolLevel: "Middle School",
+        grade: "6th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 82
+      },
+      {
+        id: 9,
+        title: "7th Grade: Algebra Basics",
+        subject: "STEM",
+        description: "Introduction to algebraic concepts",
+        type: "Interactive Practice",
+        difficulty: "Advanced",
+        estimatedTime: "35-40 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-7/algebra",
+        schoolLevel: "Middle School",
+        grade: "7th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 89
+      },
+      {
+        id: 10,
+        title: "8th Grade: Chemistry Fundamentals",
+        subject: "STEM",
+        description: "Basic chemistry concepts and reactions",
+        type: "Study Guide",
+        difficulty: "Advanced",
+        estimatedTime: "40-45 minutes",
+        contentUrl: "https://example.com/chemistry-fundamentals",
+        schoolLevel: "Middle School",
+        grade: "8th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 84
+      },
+      {
+        id: 11,
+        title: "9th Grade: World History",
+        subject: "History",
+        description: "Comprehensive world history overview",
+        type: "Video",
+        difficulty: "Advanced",
+        estimatedTime: "45-50 minutes",
+        contentUrl: "https://www.youtube.com/watch?v=example",
+        schoolLevel: "High School",
+        grade: "9th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 91
+      },
+      {
+        id: 12,
+        title: "10th Grade: Advanced Algebra",
+        subject: "STEM",
+        description: "Advanced algebraic concepts and functions",
+        type: "Interactive Practice",
+        difficulty: "Advanced",
+        estimatedTime: "50-55 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-10/algebra",
+        schoolLevel: "High School",
+        grade: "10th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 86
+      },
+      {
+        id: 13,
+        title: "11th Grade: American Literature",
+        subject: "English",
+        description: "Study of American literary works",
+        type: "Reading Material",
+        difficulty: "Advanced",
+        estimatedTime: "60-65 minutes",
+        contentUrl: "https://example.com/american-literature",
+        schoolLevel: "High School",
+        grade: "11th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 88
+      },
+      {
+        id: 14,
+        title: "12th Grade: Calculus",
+        subject: "STEM",
+        description: "Introduction to calculus concepts",
+        type: "Study Guide",
+        difficulty: "Advanced",
+        estimatedTime: "70-75 minutes",
+        contentUrl: "https://www.ixl.com/math/grade-12/calculus",
+        schoolLevel: "High School",
+        grade: "12th Grade",
+        createdAt: new Date().toISOString(),
+        popularity: 93
+      }
+    ];
   }
 }
 
-// Expose ResourcesPage class to window for app.js to use
+// Export ResourcesPage to window for global access
 window.ResourcesPage = ResourcesPage;
