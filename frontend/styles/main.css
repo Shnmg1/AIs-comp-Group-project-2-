@@ -177,6 +177,35 @@ body {
     background-color: var(--ms-white);
 }
 
+/* Typing animation */
+.typing-dots {
+    display: inline-block;
+}
+
+.typing-dots .dot1,
+.typing-dots .dot2,
+.typing-dots .dot3 {
+    animation: typing 1.4s infinite ease-in-out;
+    opacity: 0;
+}
+
+.typing-dots .dot2 {
+    animation-delay: 0.2s;
+}
+
+.typing-dots .dot3 {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+}
+
 /* Loading Spinner */
 .spinner-border {
     color: var(--ms-navy);
