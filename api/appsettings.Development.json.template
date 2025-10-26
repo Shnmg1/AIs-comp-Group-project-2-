@@ -1,0 +1,14 @@
+{
+  "GeminiAPI": {
+    "ApiKey": "YOUR_API_KEY_HERE",
+    "Model": "gemini-2.5-flash",
+    "Endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
