@@ -4,6 +4,9 @@
     "Model": "gemini-2.5-flash",
     "Endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
   },
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=./database.db"
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
