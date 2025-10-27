@@ -7,7 +7,7 @@ class AIHelperPage {
   }
 
   render() {
-    const app = document.getElementById('app');
+    const app = document.getElementById("app");
     app.innerHTML = `
       <div class="fade-in">
         <!-- Page Header -->
@@ -58,20 +58,22 @@ class AIHelperPage {
                     </div>
                   </div>
                   <div class="chat-input">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="messageInput" placeholder="Ask a question or describe a problem..." onkeypress="aiHelperPage.handleKeyPress(event)">
-                      <button class="btn btn-primary" type="button" onclick="aiHelperPage.sendMessage()">
-                        <i class="bi bi-send-fill"></i>
-                      </button>
-                    </div>
+                    <form id="chatForm" onsubmit="event.preventDefault(); aiHelperPage.sendMessage(); return false;">
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="messageInput" placeholder="Ask a question or describe a problem...">
+                        <button class="btn btn-primary" type="submit">
+                          <i class="bi bi-send-fill"></i>
+                        </button>
+                      </div>
+                    </form>
                     <div class="mt-2">
-                      <button class="btn btn-outline-secondary btn-sm me-2" onclick="aiHelperPage.sendQuickQuestion('Help me understand algebra')">
+                      <button class="btn btn-outline-secondary btn-sm me-2" onclick="event.preventDefault(); aiHelperPage.sendQuickQuestion('Help me understand algebra'); return false;">
                         <i class="bi bi-calculator me-1"></i>Math Help
                       </button>
-                      <button class="btn btn-outline-secondary btn-sm me-2" onclick="aiHelperPage.sendQuickQuestion('Explain this historical event')">
+                      <button class="btn btn-outline-secondary btn-sm me-2" onclick="event.preventDefault(); aiHelperPage.sendQuickQuestion('Explain this historical event'); return false;">
                         <i class="bi bi-book me-1"></i>History Help
                       </button>
-                      <button class="btn btn-outline-secondary btn-sm" onclick="aiHelperPage.sendQuickQuestion('Help me with grammar')">
+                      <button class="btn btn-outline-secondary btn-sm" onclick="event.preventDefault(); aiHelperPage.sendQuickQuestion('Help me with grammar'); return false;">
                         <i class="bi bi-pencil me-1"></i>English Help
                       </button>
                     </div>
@@ -138,48 +140,49 @@ class AIHelperPage {
   }
 
   handleKeyPress(event) {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
+      event.preventDefault();
       this.sendMessage();
     }
   }
 
   sendQuickQuestion(question) {
-    document.getElementById('messageInput').value = question;
+    document.getElementById("messageInput").value = question;
     this.sendMessage();
   }
 
   async sendMessage() {
-    const input = document.getElementById('messageInput');
+    const input = document.getElementById("messageInput");
     const message = input.value.trim();
 
     if (!message || this.isTyping) return;
 
     // Add user message to chat
-    this.addMessage(message, 'user');
-    input.value = '';
+    this.addMessage(message, "user");
+    input.value = "";
 
     // Show typing indicator
     this.showTypingIndicator();
 
     try {
       // Build conversation history from last 10 messages
-      const conversationHistory = this.chatHistory.slice(-10).map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.content
+      const conversationHistory = this.chatHistory.slice(-10).map((msg) => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.content,
       }));
 
       // Call the real API
-      const response = await fetch('/api/AIHelper/ask', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/AIHelper/ask", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           question: message,
-          subject: 'General',  // TODO: Could detect subject from question
-          studentLevel: 'K-12',  // TODO: Could get from user profile
-          conversationHistory: conversationHistory
-        })
+          subject: "General", // TODO: Could detect subject from question
+          studentLevel: "K-12", // TODO: Could get from user profile
+          conversationHistory: conversationHistory,
+        }),
       });
 
       if (!response.ok) {
@@ -190,45 +193,48 @@ class AIHelperPage {
 
       // Remove typing indicator and add AI response
       this.hideTypingIndicator();
-      this.addMessage(data.response, 'ai');
-
+      this.addMessage(data.response, "ai");
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error("Error getting AI response:", error);
       this.hideTypingIndicator();
-      this.addMessage('I apologize, but I encountered an error. Please try again.', 'ai');
+      this.addMessage(
+        "I apologize, but I encountered an error. Please try again.",
+        "ai"
+      );
     }
   }
 
   addMessage(content, sender) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
+    const chatMessages = document.getElementById("chatMessages");
+    const messageDiv = document.createElement("div");
     messageDiv.className = `message ${sender}`;
-    
-    const senderName = sender === 'user' ? 'You' : 'AI Assistant';
+
+    const senderName = sender === "user" ? "You" : "AI Assistant";
     messageDiv.innerHTML = `<strong>${senderName}:</strong> ${content}`;
-    
+
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    
+
     // Store in chat history
     this.chatHistory.push({ content, sender, timestamp: new Date() });
   }
 
   showTypingIndicator() {
     this.isTyping = true;
-    const chatMessages = document.getElementById('chatMessages');
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message ai';
-    typingDiv.id = 'typingIndicator';
-    typingDiv.innerHTML = '<strong>AI Assistant:</strong> <span class="typing-dots">Typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>';
-    
+    const chatMessages = document.getElementById("chatMessages");
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "message ai";
+    typingDiv.id = "typingIndicator";
+    typingDiv.innerHTML =
+      '<strong>AI Assistant:</strong> <span class="typing-dots">Typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>';
+
     chatMessages.appendChild(typingDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
   hideTypingIndicator() {
     this.isTyping = false;
-    const typingIndicator = document.getElementById('typingIndicator');
+    const typingIndicator = document.getElementById("typingIndicator");
     if (typingIndicator) {
       typingIndicator.remove();
     }
