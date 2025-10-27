@@ -33,6 +33,7 @@ class CertificationsPage {
     try {
       await this.loadCertifications();
       this.updateCategoryCounts();
+      this.applyFilters(); // Apply initial filters
       this.displayPage();
     } catch (error) {
       console.error('Error loading certifications:', error);
@@ -718,9 +719,11 @@ class CertificationsPage {
 
   // Filter Methods
   selectCategory(categoryId) {
+    console.log('selectCategory called with:', categoryId);
     this.activeFilters.category = categoryId;
     this.applyFilters();
     this.updateUI();
+    console.log('Filtered certifications count:', this.filteredCertifications.length);
   }
 
   toggleProviderFilter(provider) {
@@ -754,6 +757,7 @@ class CertificationsPage {
   }
 
   handleSearch(query) {
+    console.log('handleSearch called with query:', query);
     this.activeFilters.searchQuery = query.toLowerCase();
     const searchInput = document.getElementById('certSearch');
     if (searchInput && searchInput.value !== query) {
@@ -816,6 +820,7 @@ class CertificationsPage {
   }
 
   applyFilters() {
+    console.log('applyFilters called with activeFilters:', this.activeFilters);
     this.filteredCertifications = this.certifications.filter(cert => {
       // Category filter
       if (this.activeFilters.category !== 'all' && cert.category !== this.activeFilters.category) {
@@ -850,6 +855,7 @@ class CertificationsPage {
 
       return true;
     });
+    console.log('Filtered certifications:', this.filteredCertifications.length, 'out of', this.certifications.length);
   }
 
   updateUI() {
@@ -867,12 +873,22 @@ class CertificationsPage {
 
     // Update certifications grid
     this.updateCertificationsGrid();
+    
+    // Update results count
+    this.updateResultsCount();
   }
 
   updateCertificationsGrid() {
     const grid = document.getElementById('certificationsGrid');
     if (grid) {
       grid.innerHTML = this.renderCertificationsGrid();
+    }
+  }
+
+  updateResultsCount() {
+    const resultsCount = document.querySelector('.results-count');
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${this.filteredCertifications.length} of ${this.certifications.length} certifications`;
     }
   }
 
