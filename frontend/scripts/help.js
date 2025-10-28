@@ -243,55 +243,6 @@ class HelpPage {
             </div>
           </div>
         </div>
-
-        <!-- Additional Resources -->
-        <div class="container mb-5">
-          <div class="row">
-            <div class="col-12">
-              <h2 class="h3 text-ms-navy mb-4">
-                <i class="bi bi-info-circle-fill me-2"></i>Additional Resources
-              </h2>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-book-fill text-ms-red" style="font-size: 3rem;"></i>
-                  <h5 class="card-title mt-3">User Guide</h5>
-                  <p class="card-text">Comprehensive guide on how to use all platform features.</p>
-                  <button class="btn btn-outline-primary" onclick="helpPage.downloadUserGuide()">
-                    <i class="bi bi-download me-1"></i>Download PDF
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-video-fill text-ms-red" style="font-size: 3rem;"></i>
-                  <h5 class="card-title mt-3">Video Tutorials</h5>
-                  <p class="card-text">Watch step-by-step tutorials on platform navigation.</p>
-                  <button class="btn btn-outline-primary" onclick="showVideos()">
-                    <i class="bi bi-play-fill me-1"></i>Watch Videos
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-people-fill text-ms-red" style="font-size: 3rem;"></i>
-                  <h5 class="card-title mt-3">Community</h5>
-                  <p class="card-text">Connect with other Mississippi students using the platform.</p>
-                  <button class="btn btn-outline-primary" onclick="helpPage.showCommunityInfo()">
-                    <i class="bi bi-info-circle me-1"></i>Learn More
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     `;
     

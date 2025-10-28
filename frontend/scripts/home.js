@@ -14,7 +14,7 @@ class HomePage {
             <div class="row align-items-center">
               <div class="col-lg-8">
                 <h1 class="hero-title">
-                  <i class="bi bi-mortarboard-fill me-3"></i>
+                  <img src="../frontend/Resources/Mississippi Flower.png" alt="MS Quality Education" class="me-3" style="height: 64px; width: auto; opacity: 0.9;">
                   Mississippi Quality Education Platform
                 </h1>
                 <p class="hero-subtitle">
@@ -25,7 +25,7 @@ class HomePage {
                   <button class="btn btn-warning btn-lg me-3" onclick="showResources()">
                     <i class="bi bi-book-fill me-2"></i>Explore Resources
                   </button>
-                  <button class="btn btn-outline-light btn-lg me-3" onclick="showAIHelper()">
+                  <button class="btn btn-outline-light btn-lg me-3" onclick="showAITutor()">
                     <i class="bi bi-robot me-2"></i>Get Help Now
                   </button>
                   <button class="btn btn-outline-light btn-lg" onclick="showHelp()">
@@ -34,7 +34,7 @@ class HomePage {
                 </div>
               </div>
               <div class="col-lg-4 text-center">
-                <i class="bi bi-mortarboard-fill" style="font-size: 8rem; opacity: 0.8;"></i>
+                <img src="../frontend/Resources/Mississippi Flower.png" alt="MS Quality Education" style="max-width: 100%; height: 200px; width: auto; opacity: 0.8;">
               </div>
             </div>
           </div>
@@ -109,7 +109,7 @@ class HomePage {
                     Stuck on a problem? Our AI assistant will guide you through step-by-step solutions 
                     to help you learn, not just get answers.
                   </p>
-                  <button class="btn btn-warning btn-lg" onclick="showAIHelper()">
+                  <button class="btn btn-warning btn-lg" onclick="showAITutor()">
                     <i class="bi bi-chat-dots-fill me-2"></i>Start Learning with AI
                   </button>
                 </div>
