@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using QualityEducationAPI.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace QualityEducationAPI.Controllers
 {
@@ -9,10 +11,20 @@ namespace QualityEducationAPI.Controllers
     public class AIHelperController : ControllerBase
     {
         private readonly string _connectionString;
+        private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<AIHelperController> _logger;
 
-        public AIHelperController(IConfiguration configuration)
+        public AIHelperController(
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory,
+            ILogger<AIHelperController> logger)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string not found");
+            _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
+            _logger = logger;
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string not found");
         }
 
         [HttpPost("ask")]
@@ -21,7 +33,7 @@ namespace QualityEducationAPI.Controllers
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
 
-            // First, save the question
+            // Save the question to database
             var questionQuery = @"
                 INSERT INTO Questions (Question, Subject, StudentLevel, CreatedAt)
                 VALUES (@question, @subject, @studentLevel, @createdAt);
@@ -35,10 +47,41 @@ namespace QualityEducationAPI.Controllers
 
             var questionId = Convert.ToInt32(await questionCommand.ExecuteScalarAsync());
 
-            // Generate AI response (simplified version - in production, this would integrate with a real AI service)
-            var aiResponse = GenerateAIResponse(request.Question, request.Subject, request.StudentLevel);
+            // Generate AI response using Gemini
+            string aiResponse;
+            try
+            {
+                aiResponse = await CallGeminiAPI(
+                    request.Question,
+                    request.Subject,
+                    request.StudentLevel,
+                    request.ConversationHistory
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Gemini API");
 
-            // Save the AI response
+                // Return user-friendly error message based on exception type
+                if (ex is HttpRequestException)
+                {
+                    aiResponse = "I'm having trouble connecting to the AI service. Please check your internet connection and try again.";
+                }
+                else if (ex.Message.Contains("401") || ex.Message.Contains("403"))
+                {
+                    aiResponse = "The AI assistant is not configured properly. Please contact your administrator.";
+                }
+                else if (ex.Message.Contains("429"))
+                {
+                    aiResponse = "Too many questions at once! Please wait a moment before asking another question.";
+                }
+                else
+                {
+                    aiResponse = "I encountered an unexpected error. Please try rephrasing your question or try again later.";
+                }
+            }
+
+            // Save the AI response to database
             var responseQuery = @"
                 INSERT INTO AIResponses (QuestionId, Response, CreatedAt)
                 VALUES (@questionId, @response, @createdAt);
@@ -61,10 +104,12 @@ namespace QualityEducationAPI.Controllers
         }
 
         [HttpGet("questions")]
-        public async Task<ActionResult<IEnumerable<Question>>> GetQuestions([FromQuery] string? subject = null, [FromQuery] int? limit = 50)
+        public async Task<ActionResult<IEnumerable<Question>>> GetQuestions(
+            [FromQuery] string? subject = null,
+            [FromQuery] int? limit = 50)
         {
             var questions = new List<Question>();
-            
+
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
 
@@ -78,7 +123,7 @@ namespace QualityEducationAPI.Controllers
             }
 
             query += " ORDER BY CreatedAt DESC";
-            
+
             if (limit.HasValue)
             {
                 query += " LIMIT @limit";
@@ -111,7 +156,7 @@ namespace QualityEducationAPI.Controllers
             await connection.OpenAsync();
 
             var query = "SELECT Id, QuestionId, Response, CreatedAt FROM AIResponses WHERE QuestionId = @questionId ORDER BY CreatedAt DESC LIMIT 1";
-            
+
             using var command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@questionId", questionId);
 
@@ -132,85 +177,134 @@ namespace QualityEducationAPI.Controllers
             return NotFound();
         }
 
-        private string GenerateAIResponse(string question, string? subject, string? studentLevel)
+        private async Task<string> CallGeminiAPI(
+            string question,
+            string? subject,
+            string? studentLevel,
+            List<ConversationMessage>? conversationHistory)
         {
-            // This is a simplified AI response generator
-            // In a real implementation, this would integrate with OpenAI, Azure OpenAI, or another AI service
-            
-            var questionLower = question.ToLower();
-            
-            if (questionLower.Contains("algebra") || questionLower.Contains("math") || questionLower.Contains("equation"))
+            // Get configuration
+            var apiKey = _configuration["GeminiAPI:ApiKey"];
+            var model = _configuration["GeminiAPI:Model"] ?? "gemini-2.5-flash";
+            var endpointTemplate = _configuration["GeminiAPI:Endpoint"]
+                ?? "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
+
+            if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_API_KEY_HERE")
             {
-                return @"I'd be happy to help you with algebra! Let's break this down step by step.
-
-First, can you tell me what specific algebraic concept you're working with? For example:
-- Are you solving linear equations?
-- Working with quadratic equations?
-- Simplifying expressions?
-
-Once I know the specific problem, I can guide you through the process rather than just giving you the answer. This way, you'll learn the method and be able to solve similar problems on your own!
-
-What's the specific equation or problem you're looking at?";
+                throw new InvalidOperationException("Gemini API key not configured");
             }
-            
-            if (questionLower.Contains("history") || questionLower.Contains("civil war") || questionLower.Contains("historical"))
+
+            // Build the endpoint URL
+            var endpoint = endpointTemplate.Replace("{model}", model);
+            var fullUrl = $"{endpoint}?key={apiKey}";
+
+            // Build the system prompt with context
+            var systemPrompt = BuildSocraticPrompt(question, subject, studentLevel, conversationHistory);
+
+            // Create Gemini request
+            var geminiRequest = new GeminiRequest
             {
-                return @"Great question about history! I love helping students understand historical events and their significance.
+                Contents = new List<GeminiContent>
+                {
+                    new GeminiContent
+                    {
+                        Parts = new List<GeminiPart>
+                        {
+                            new GeminiPart { Text = systemPrompt }
+                        }
+                    }
+                }
+            };
 
-To give you the best guidance, could you be more specific about what historical topic you'd like to explore? For example:
-- Are you studying a particular war or conflict?
-- Looking at social movements like the Civil Rights Movement?
-- Analyzing causes and effects of historical events?
-
-I can help you:
-- Understand the context and background
-- Identify key figures and their roles
-- Analyze cause-and-effect relationships
-- Develop critical thinking about historical significance
-
-What specific historical topic or question are you working on?";
-            }
-            
-            if (questionLower.Contains("english") || questionLower.Contains("grammar") || questionLower.Contains("writing") || questionLower.Contains("essay"))
+            // Serialize request
+            var jsonRequest = JsonSerializer.Serialize(geminiRequest, new JsonSerializerOptions
             {
-                return @"I'm excited to help you with English! Whether it's grammar, writing, or literature analysis, I'm here to guide your learning.
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
-Could you tell me more about what you need help with? For example:
-- Grammar and punctuation rules?
-- Essay structure and organization?
-- Literary analysis techniques?
-- Reading comprehension strategies?
+            // Make HTTP request
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
 
-My approach is to help you understand the underlying principles so you can apply them to future work. I'll ask guiding questions and provide step-by-step explanations rather than just correcting your work.
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync(fullUrl, content);
 
-What specific English concept or assignment are you working on?";
-            }
-            
-            if (questionLower.Contains("help") || questionLower.Contains("don't understand") || questionLower.Contains("confused"))
+            if (!response.IsSuccessStatusCode)
             {
-                return @"I'm here to help you understand! Learning can be challenging, but breaking things down step by step makes it much easier.
-
-To give you the most helpful guidance, could you share:
-1. What subject you're working on (English, History, or STEM)
-2. The specific concept or problem you're struggling with
-3. What you've tried so far (if anything)
-
-Remember, it's completely normal to feel confused when learning something new. The key is to take it one step at a time and ask questions along the way!
-
-What would you like to work on together?";
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"Gemini API error: {response.StatusCode} - {errorContent}");
+                throw new HttpRequestException($"{response.StatusCode}");
             }
-            
-            // Default response
-            return @"That's an interesting question! I'd love to help you work through this step by step.
 
-To provide you with the most helpful guidance, could you give me a bit more detail about:
-- What subject this relates to (English, History, or STEM)
-- The specific problem or concept you're working with
-- What you already understand about the topic
+            // Parse response
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(jsonResponse, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
-I believe in helping you learn the process and reasoning behind solutions, not just giving you the answers. This way, you'll be able to tackle similar problems independently in the future!
+            // Extract text from response
+            var responseText = geminiResponse?.Candidates?[0]?.Content?.Parts?[0]?.Text;
 
-What additional details can you share about your question?";
+            if (string.IsNullOrEmpty(responseText))
+            {
+                throw new InvalidOperationException("Empty response from Gemini API");
+            }
+
+            return responseText;
+        }
+
+        private string BuildSocraticPrompt(
+            string question,
+            string? subject,
+            string? studentLevel,
+            List<ConversationMessage>? conversationHistory)
+        {
+            var prompt = new StringBuilder();
+
+            // System instructions
+            prompt.AppendLine("You are a Socratic tutor for Mississippi K-12 students. Your role is to guide students to discover answers through questioning, not to provide direct answers.");
+            prompt.AppendLine();
+            prompt.AppendLine("CORE RULES:");
+            prompt.AppendLine("1. NEVER give direct answers to homework or test questions");
+            prompt.AppendLine("2. Break complex problems into smaller guiding questions");
+            prompt.AppendLine("3. Ask what the student already knows before explaining");
+            prompt.AppendLine("4. Use examples and analogies appropriate for the grade level");
+            prompt.AppendLine("5. Celebrate progress and encourage critical thinking");
+            prompt.AppendLine("6. If student is stuck, provide hints but not solutions");
+            prompt.AppendLine("7. Keep responses conversational and encouraging");
+            prompt.AppendLine("8. Respond in 2-4 paragraphs maximum");
+            prompt.AppendLine();
+
+            // Add context
+            if (!string.IsNullOrEmpty(subject))
+            {
+                prompt.AppendLine($"SUBJECT CONTEXT: {subject}");
+            }
+            if (!string.IsNullOrEmpty(studentLevel))
+            {
+                prompt.AppendLine($"GRADE LEVEL: {studentLevel}");
+            }
+            prompt.AppendLine();
+
+            // Add conversation history if available
+            if (conversationHistory != null && conversationHistory.Any())
+            {
+                prompt.AppendLine("Previous conversation context:");
+                foreach (var message in conversationHistory.TakeLast(10))
+                {
+                    var role = message.Role == "user" ? "Student" : "Tutor";
+                    prompt.AppendLine($"{role}: {message.Content}");
+                }
+                prompt.AppendLine();
+            }
+
+            // Add current question
+            prompt.AppendLine($"Student's current question: {question}");
+            prompt.AppendLine();
+            prompt.AppendLine("Respond with a helpful, encouraging Socratic response that guides learning:");
+
+            return prompt.ToString();
         }
     }
 }

@@ -7,7 +7,7 @@ class AIHelperPage {
   }
  
   render() {
-    const app = document.getElementById('app');
+    const app = document.getElementById("app");
     app.innerHTML = `
       <div class="fade-in">
         <!-- Page Header -->
@@ -164,47 +164,73 @@ class AIHelperPage {
   }
  
   handleKeyPress(event) {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
+      event.preventDefault();
       this.sendMessage();
     }
   }
  
   sendQuickQuestion(question) {
-    document.getElementById('messageInput').value = question;
+    document.getElementById("messageInput").value = question;
     this.sendMessage();
   }
  
   async sendMessage() {
-    const input = document.getElementById('messageInput');
+    const input = document.getElementById("messageInput");
     const message = input.value.trim();
-   
+
     if (!message || this.isTyping) return;
-   
+
     // Add user message to chat
-    this.addMessage(message, 'user');
-    input.value = '';
-   
+    this.addMessage(message, "user");
+    input.value = "";
+
     // Show typing indicator
     this.showTypingIndicator();
-   
+
     try {
-      // Simulate API call - in real implementation, this would call the backend
-      const response = await this.simulateAIResponse(message);
-     
+      // Build conversation history from last 10 messages
+      const conversationHistory = this.chatHistory.slice(-10).map((msg) => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.content,
+      }));
+
+      // Call the real API
+      const response = await fetch("http://localhost:5000/api/AIHelper/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: message,
+          subject: "General", // TODO: Could detect subject from question
+          studentLevel: "K-12", // TODO: Could get from user profile
+          conversationHistory: conversationHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
       // Remove typing indicator and add AI response
       this.hideTypingIndicator();
-      this.addMessage(response, 'ai');
-     
+      this.addMessage(data.response, "ai");
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error("Error getting AI response:", error);
       this.hideTypingIndicator();
-      this.addMessage('I apologize, but I encountered an error. Please try again.', 'ai');
+      this.addMessage(
+        "I apologize, but I encountered an error. Please try again.",
+        "ai"
+      );
     }
   }
  
   addMessage(content, sender) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
+    const chatMessages = document.getElementById("chatMessages");
+    const messageDiv = document.createElement("div");
     messageDiv.className = `message ${sender}`;
    
     const senderName = sender === 'user' ? 'You' : 'AI Assistant';
@@ -219,34 +245,36 @@ class AIHelperPage {
  
   showTypingIndicator() {
     this.isTyping = true;
-    const chatMessages = document.getElementById('chatMessages');
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message ai';
-    typingDiv.id = 'typingIndicator';
-    typingDiv.innerHTML = '<strong>AI Assistant:</strong> <span class="typing-dots">Typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>';
-   
+    const chatMessages = document.getElementById("chatMessages");
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "message ai";
+    typingDiv.id = "typingIndicator";
+    typingDiv.innerHTML =
+      '<strong>AI Assistant:</strong> <span class="typing-dots">Typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>';
+
     chatMessages.appendChild(typingDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
  
   hideTypingIndicator() {
     this.isTyping = false;
-    const typingIndicator = document.getElementById('typingIndicator');
+    const typingIndicator = document.getElementById("typingIndicator");
     if (typingIndicator) {
       typingIndicator.remove();
     }
   }
- 
+
+  /* DEPRECATED: Replaced with real Gemini API integration
   async simulateAIResponse(userMessage) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-   
+
     // Simple response simulation based on keywords
     const message = userMessage.toLowerCase();
-   
+
     if (message.includes('algebra') || message.includes('math') || message.includes('equation')) {
       return `I'd be happy to help you with algebra! Let's break this down step by step.
- 
+
 First, can you tell me what specific algebraic concept you're working with? For example:
 - Are you solving linear equations?
 - Working with quadratic equations?
@@ -256,7 +284,7 @@ Once I know the specific problem, I can guide you through the process rather tha
  
 What's the specific equation or problem you're looking at?`;
     }
-   
+
     if (message.includes('history') || message.includes('civil war') || message.includes('historical')) {
       return `Great question about history! I love helping students understand historical events and their significance.
  
@@ -273,7 +301,7 @@ I can help you:
  
 What specific historical topic or question are you working on?`;
     }
-   
+
     if (message.includes('english') || message.includes('grammar') || message.includes('writing') || message.includes('essay')) {
       return `I'm excited to help you with English! Whether it's grammar, writing, or literature analysis, I'm here to guide your learning.
  
@@ -287,7 +315,7 @@ My approach is to help you understand the underlying principles so you can apply
  
 What specific English concept or assignment are you working on?`;
     }
-   
+
     if (message.includes('help') || message.includes('don\'t understand') || message.includes('confused')) {
       return `I'm here to help you understand! Learning can be challenging, but breaking things down step by step makes it much easier.
  
@@ -300,7 +328,7 @@ Remember, it's completely normal to feel confused when learning something new. T
  
 What would you like to work on together?`;
     }
-   
+
     // Default response
     return `That's an interesting question! I'd love to help you work through this step by step.
  
@@ -313,6 +341,7 @@ I believe in helping you learn the process and reasoning behind solutions, not j
  
 What additional details can you share about your question?`;
   }
+  */
 }
  
 // Expose AIHelperPage class to window for app.js to use

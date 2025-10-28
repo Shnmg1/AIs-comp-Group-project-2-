@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -30,6 +31,43 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
+
+// Serve static files - serve index.html for root
+app.MapGet("/", async context =>
+{
+    var indexPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "index.html");
+    context.Response.ContentType = "text/html";
+    await context.Response.SendFileAsync(indexPath);
+});
+
+// Serve frontend folder
+app.MapGet("/frontend/{**path}", async context =>
+{
+    var path = context.Request.RouteValues["path"]?.ToString() ?? "";
+    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "frontend", path);
+
+    if (File.Exists(filePath))
+    {
+        var extension = Path.GetExtension(filePath).ToLower();
+        context.Response.ContentType = extension switch
+        {
+            ".html" => "text/html",
+            ".css" => "text/css",
+            ".js" => "application/javascript",
+            ".json" => "application/json",
+            ".png" => "image/png",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".svg" => "image/svg+xml",
+            _ => "application/octet-stream"
+        };
+        await context.Response.SendFileAsync(filePath);
+    }
+    else
+    {
+        context.Response.StatusCode = 404;
+    }
+});
 
 // Initialize database
 InitializeDatabase();
@@ -61,7 +99,7 @@ void InitializeDatabase()
     // Add SchoolLevel and Grade columns if they don't exist
     var addSchoolLevelColumn = "ALTER TABLE Resources ADD COLUMN SchoolLevel TEXT DEFAULT ''";
     var addGradeColumn = "ALTER TABLE Resources ADD COLUMN Grade TEXT DEFAULT ''";
-    
+
     try
     {
         using var addSchoolLevelCommand = new SqliteCommand(addSchoolLevelColumn, connection);
@@ -71,7 +109,7 @@ void InitializeDatabase()
     {
         // Column already exists, ignore
     }
-    
+
     try
     {
         using var addGradeCommand = new SqliteCommand(addGradeColumn, connection);
@@ -149,22 +187,22 @@ void InitializeDatabase()
         )";
 
     var command = connection.CreateCommand();
-    
+
     command.CommandText = createResourcesTable;
     command.ExecuteNonQuery();
-    
+
     command.CommandText = createVideosTable;
     command.ExecuteNonQuery();
-    
+
     command.CommandText = createCertificationsTable;
     command.ExecuteNonQuery();
-    
+
     command.CommandText = createQuestionsTable;
     command.ExecuteNonQuery();
-    
+
     command.CommandText = createAIResponsesTable;
     command.ExecuteNonQuery();
-    
+
     command.CommandText = createContactsTable;
     command.ExecuteNonQuery();
 
