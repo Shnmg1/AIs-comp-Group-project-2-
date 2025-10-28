@@ -40,6 +40,8 @@ body {
 .btn-primary {
     background-color: var(--ms-navy);
     border-color: var(--ms-navy);
+    position: relative;
+    z-index: 1;
 }
 
 .btn-primary:hover {
@@ -50,6 +52,8 @@ body {
 .btn-danger {
     background-color: var(--ms-red);
     border-color: var(--ms-red);
+    position: relative;
+    z-index: 1;
 }
 
 .btn-danger:hover {
@@ -60,13 +64,20 @@ body {
 .btn-warning {
     background-color: var(--ms-gold);
     border-color: var(--ms-gold);
-    color: var(--ms-navy);
+    color: white;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-warning:hover {
     background-color: #e6c200;
     border-color: #e6c200;
-    color: var(--ms-navy);
+    color: white;
+}
+
+.btn-outline-light {
+    position: relative;
+    z-index: 1;
 }
 
 /* Card Styles */
@@ -274,6 +285,12 @@ mark.bg-warning {
   bottom: 0;
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
   opacity: 0.3;
+  pointer-events: none;
+}
+
+.hero-section > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-stats {
@@ -320,10 +337,10 @@ mark.bg-warning {
 .school-level-tab {
   width: 100%;
   height: 120px;
-  border: 2px solid #e9ecef;
+  border: 2px solid #002868;
   border-radius: 12px;
   background: #ffffff;
-  color: #6c757d;
+  color: #002868;
   transition: all 0.3s ease;
   padding: 1.5rem;
   display: flex;
@@ -348,24 +365,60 @@ mark.bg-warning {
   left: 100%;
 }
 
-.school-level-tab:hover {
-  border-color: var(--ms-navy);
-  color: var(--ms-navy);
+.school-level-tab:hover:not(.active) {
+  border-color: #002868;
+  color: #002868;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 40, 104, 0.15);
 }
 
+.school-level-tab:hover:not(.active) i {
+  color: #002868;
+}
+
+.school-level-tab:hover:not(.active) .tab-content h5 {
+  color: #002868;
+}
+
+.school-level-tab:hover:not(.active) .tab-content span {
+  color: #002868;
+}
+
 .school-level-tab.active {
-  background: linear-gradient(135deg, var(--ms-navy) 0%, #003d82 100%);
-  border-color: var(--ms-navy);
-  color: #ffffff;
+  background: #002868 !important;
+  border-color: #002868 !important;
+  color: #ffffff !important;
   box-shadow: 0 8px 25px rgba(0, 40, 104, 0.25);
+}
+
+.school-level-tab.active:hover {
+  background: #001f4a !important;
+  border-color: #001f4a !important;
+}
+
+.school-level-tab.active i {
+  color: #ffffff !important;
+}
+
+.school-level-tab.active .tab-content h5 {
+  color: #ffffff !important;
+}
+
+.school-level-tab.active .tab-content span {
+  color: #ffffff !important;
+  opacity: 0.9;
 }
 
 .school-level-tab i {
   font-size: 2.5rem;
   margin-right: 1rem;
   color: inherit;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .tab-content h5 {
@@ -393,10 +446,10 @@ mark.bg-warning {
 .grade-btn {
   min-width: 100px;
   height: 45px;
-  border: 2px solid #e9ecef;
+  border: 2px solid #002868;
   border-radius: 8px;
   background: #ffffff;
-  color: #6c757d;
+  color: #002868;
   font-weight: 500;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -419,18 +472,23 @@ mark.bg-warning {
   left: 100%;
 }
 
-.grade-btn:hover {
-  border-color: var(--ms-navy);
-  color: var(--ms-navy);
+.grade-btn:hover:not(.active) {
+  border-color: #002868;
+  color: #002868;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 40, 104, 0.15);
 }
 
 .grade-btn.active {
-  background: linear-gradient(135deg, var(--ms-navy) 0%, #003d82 100%);
-  border-color: var(--ms-navy);
-  color: #ffffff;
+  background: #002868 !important;
+  border-color: #002868 !important;
+  color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(0, 40, 104, 0.25);
+}
+
+.grade-btn.active:hover {
+  background: #001f4a !important;
+  border-color: #001f4a !important;
 }
 
 /* Filter Controls */
@@ -1485,6 +1543,164 @@ mark.bg-warning {
   }
 }
 
+/* ===== AI Tutor Chat Interface Styles ===== */
+
+/* Message Bubbles */
+.message-bubble {
+  position: relative;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.user-message {
+  background: linear-gradient(135deg, var(--ms-navy) 0%, #003d82 100%);
+  color: white;
+  margin-left: auto;
+}
+
+.ai-message {
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #495057;
+  margin-right: auto;
+}
+
+/* Avatar Styles */
+.avatar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+}
+
+/* Typing Animation */
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+.typing-dot {
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+/* Chat Container */
+.chat-messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ms-navy) #f1f3f5;
+}
+
+.chat-messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: #f1f3f5;
+  border-radius: 4px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: var(--ms-navy);
+  border-radius: 4px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background: #001f4a;
+}
+
+/* Quick Prompt Buttons */
+.hover-bg-blue-50:hover {
+  background-color: #e3f2fd !important;
+}
+
+.hover-border-ms-navy:hover {
+  border-color: var(--ms-navy) !important;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-to-br {
+  background: linear-gradient(to bottom right, var(--primary), var(--secondary));
+}
+
+.bg-gradient-to-r {
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+}
+
+/* Feature Cards */
+.bg-gradient-to-br.from-blue-50.to-indigo-50 {
+  background: linear-gradient(to bottom right, #e3f2fd, #e8eaf6);
+}
+
+.bg-gradient-to-br.from-purple-50.to-pink-50 {
+  background: linear-gradient(to bottom right, #f3e5f5, #fce4ec);
+}
+
+.bg-gradient-to-br.from-amber-50.to-yellow-50 {
+  background: linear-gradient(to bottom right, #fff8e1, #fffde7);
+}
+
+/* Message Animations */
+.message-bubble {
+  animation: messageSlideIn 0.4s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Chat */
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 90% !important;
+  }
+  
+  .avatar {
+    width: 35px !important;
+    height: 35px !important;
+  }
+  
+  .chat-messages-container {
+    height: 400px !important;
+    padding: 1rem !important;
+  }
+}
+
+/* Input Focus States */
+#messageInput:focus {
+  border-color: var(--ms-navy);
+  box-shadow: 0 0 0 0.2rem rgba(0, 40, 104, 0.25);
+}
+
+/* Button Hover Effects */
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 40, 104, 0.3);
+}
+
+/* Card Hover Effects */
+.card.shadow-lg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
 /* ===== Collapsible Sidebar Styles ===== */
 
 /* Sidebar Toggle Button */
@@ -1650,3 +1866,260 @@ mark.bg-warning {
 .cert-card:nth-child(5) { animation-delay: 0.2s; }
 .cert-card:nth-child(6) { animation-delay: 0.25s; }
 .cert-card:nth-child(n+7) { animation-delay: 0.3s; }
+
+/* ===== Learning Paths Styles ===== */
+
+/* Learning Path Cards */
+.learning-path-card {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.learning-path-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--ms-navy);
+}
+
+.learning-path-card .card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ms-navy);
+  margin-bottom: 0.75rem;
+}
+
+.learning-path-card .card-text {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.learning-path-card .btn {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.learning-path-card .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Lesson Cards */
+.lesson-card {
+  border: 1px solid #e9ecef;
+  border-left: 4px solid var(--ms-navy);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--ms-red);
+}
+
+.lesson-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ms-navy);
+  margin-bottom: 0.5rem;
+}
+
+.lesson-card .card-text {
+  color: #6c757d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Lesson Content */
+.lesson-content {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-content h3 {
+  color: var(--ms-navy);
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.lesson-content h4 {
+  color: var(--ms-navy);
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-content ul, .lesson-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.lesson-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.lesson-content strong {
+  color: var(--ms-navy);
+  font-weight: 600;
+}
+
+/* Example Boxes */
+.example-box {
+  border-left: 4px solid var(--ms-red);
+  background: #f8f9fa;
+  margin: 1rem 0;
+}
+
+.reading-passage {
+  background: #f8f9fa;
+  border-left: 4px solid var(--ms-navy);
+  margin: 1rem 0;
+}
+
+.eco-types .bg-success,
+.eco-types .bg-primary,
+.eco-types .bg-danger,
+.eco-types .bg-warning {
+  border-left: 4px solid currentColor;
+}
+
+.food-chain {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ms-navy);
+}
+
+.facts-box {
+  border-left: 4px solid var(--ms-gold);
+  background: #fffbe6;
+}
+
+/* Practice Questions */
+.practice-section {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-item {
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.question-item:last-child {
+  border-bottom: none;
+}
+
+.question-text {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.options-list {
+  margin: 1rem 0;
+}
+
+.form-check {
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.form-check:hover {
+  background: #f8f9fa;
+}
+
+.form-check-input:checked ~ .form-check-label {
+  color: var(--ms-navy);
+  font-weight: 600;
+}
+
+/* Activity Section */
+.activity-section {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Answer Feedback */
+.answer-feedback .alert {
+  border-radius: 8px;
+  border: none;
+  animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hints Section */
+.hints-section {
+  animation: fadeIn 0.3s ease;
+}
+
+.hints-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.hints-section .list-group-item {
+  border-left: 4px solid var(--ms-gold);
+  background: #fffbe6;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.hints-section .list-group-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Subject Sections */
+.subject-section {
+  margin-bottom: 3rem;
+}
+
+.subject-section h2 {
+  border-bottom: 3px solid currentColor;
+  padding-bottom: 0.5rem;
+}
+
+/* Responsive Design for Learning Paths */
+@media (max-width: 768px) {
+  .learning-path-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .lesson-card {
+    padding: 1rem;
+  }
+
+  .question-text {
+    font-size: 1rem;
+  }
+
+  .options-list {
+    margin: 0.75rem 0;
+  }
+}
+
+/* Loading states for learning paths */
+.learning-path-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--ms-navy);
+}

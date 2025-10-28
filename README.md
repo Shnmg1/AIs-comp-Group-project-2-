@@ -47,7 +47,7 @@ This platform addresses quality education challenges by providing:
    The API will be available at `http://localhost:5000`
 
 3. **Open the Frontend**
-   - Open `index.html` in your web browser
+   - Open `Pages/index.html` in your web browser
    - Or use a local web server (e.g., Live Server in VS Code)
    - The frontend will automatically connect to the API
 
@@ -95,8 +95,18 @@ This platform addresses quality education challenges by providing:
 
 ## 📚 Features
 
+### Learning Paths
+- **Question-Focused Learning**: 5-10 practice questions per lesson that guide students to correct answers
+- **Mississippi Standards**: All content aligned with MCCRS (Mississippi College- and Career-Readiness Standards)
+- **Grade-Appropriate Content**: Age-appropriate language and paragraph-length readings
+- **Progressive Learning**: Structured paths with lessons building on each other
+- **Step-by-Step Hints**: Each question includes 3-4 progressive hints that walk students through problem-solving
+- **Comprehensive Coverage**: Pre-K through 12th grade in Math, Science, ELA, and Social Studies
+
 ### Educational Resources
-- Filter by subject (English, History, STEM)
+- Filter by school level (Elementary, Middle School, High School)
+- Filter by grade and subject
+- Learning Paths view with structured lessons
 - Search functionality
 - Detailed resource information
 - Difficulty levels and time estimates
@@ -123,24 +133,34 @@ This platform addresses quality education challenges by providing:
 
 ### Project Structure
 ```
-├── index.html              # Main HTML file
+├── Pages/
+│   └── index.html                    # Main HTML file
 ├── frontend/
 │   ├── styles/
-│   │   └── main.css        # Custom CSS with Mississippi colors
+│   │   └── main.css                  # Custom CSS with Mississippi colors
 │   └── scripts/
-│       ├── app.js          # Main application controller
-│       ├── home.js         # Home page module
-│       ├── resources.js    # Resources page module
-│       ├── videos.js       # Videos page module
-│       ├── certifications.js # Certifications page module
-│       └── ai-helper.js    # AI helper page module
+│       ├── app.js                    # Main application controller
+│       ├── home.js                   # Home page module
+│       ├── resources.js              # Resources page module with Learning Paths
+│       ├── learning-paths.js         # Learning paths data (MCCRS-aligned content)
+│       ├── activity-handlers.js      # Interactive activity handlers
+│       ├── videos.js                 # Videos page module
+│       ├── certifications.js         # Certifications page module
+│       ├── ai-tutor.js              # AI tutor page module
+│       └── help.js                   # Help page module
 ├── api/
-│   ├── Controllers/        # API controllers
-│   ├── Models/            # Data models
-│   ├── Program.cs         # Application entry point
-│   ├── appsettings.json   # Configuration
-│   └── QualityEducationAPI.csproj # Project file
-└── README.md              # This file
+│   ├── Controllers/                  # API controllers
+│   │   ├── ResourcesController.cs
+│   │   ├── VideosController.cs
+│   │   ├── CertificationsController.cs
+│   │   ├── AIHelperController.cs
+│   │   └── LearningPathsController.cs
+│   ├── Models/                       # Data models
+│   ├── Program.cs                    # Application entry point
+│   ├── database.db                   # SQLite database
+│   ├── appsettings.json              # Configuration
+│   └── QualityEducationAPI.csproj    # Project file
+└── README.md                         # This file
 ```
 
 ### Adding New Features

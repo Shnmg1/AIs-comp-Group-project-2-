@@ -49,8 +49,8 @@ class App {
       case 'certifications':
         this.showCertifications();
         break;
-      case 'ai-helper':
-        this.showAIHelper();
+      case 'ai-tutor':
+        this.showAITutor();
         break;
       case 'help':
         this.showHelp();
@@ -94,9 +94,9 @@ class App {
     }
   }
 
-  showAIHelper() {
-    if (this.pageModules.aiHelper) {
-      this.pageModules.aiHelper.render();
+  showAITutor() {
+    if (this.pageModules.aiTutor) {
+      this.pageModules.aiTutor.render();
     } else {
       document.getElementById('app').innerHTML = '<div class="container mt-5"><div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div></div>';
     }
@@ -188,11 +188,18 @@ class App {
 let app;
 
 // Global page instances for onclick handlers
-let resourcesPage, videosPage, certificationsPage, aiHelperPage, helpPage;
+let resourcesPage, videosPage, certificationsPage, aiTutorPage, helpPage;
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded fired, initializing app...');
   app = new App();
+  console.log('App initialized:', !!app);
+  console.log('Button handlers ready:', {
+    showResources: typeof window.showResources,
+    showAITutor: typeof window.showAITutor,
+    showHelp: typeof window.showHelp
+  });
   
   // Register page modules after they're loaded
   if (window.HomePage) {
@@ -201,6 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.ResourcesPage) {
     resourcesPage = new window.ResourcesPage(app);
     app.registerPageModule('resources', resourcesPage);
+    // Set global variable for onclick handlers
+    window.resourcesPage = resourcesPage;
+    console.log('ResourcesPage initialized:', !!window.resourcesPage);
   }
   if (window.VideosPage) {
     videosPage = new window.VideosPage(app);
@@ -212,13 +222,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set global variable for onclick handlers
     window.certificationsPage = certModule;
   }
-  if (window.AIHelperPage) {
-    aiHelperPage = new window.AIHelperPage(app);
-    app.registerPageModule('aiHelper', aiHelperPage);
+  if (window.AITutorPage) {
+    aiTutorPage = new window.AITutorPage(app);
+    app.registerPageModule('aiTutor', aiTutorPage);
+    // Set global variable for onclick handlers
+    window.aiTutorPage = aiTutorPage;
   }
   if (window.HelpPage) {
     helpPage = new window.HelpPage(app);
     app.registerPageModule('help', helpPage);
+    // Set global variable for onclick handlers
+    window.helpPage = helpPage;
   }
   
   // Now that all modules are registered, show the home page
@@ -226,26 +240,40 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Global navigation functions (for onclick handlers)
-function showHome() {
-  if (app) app.showHome();
+// These are defined before DOMContentLoaded so they're available when buttons are clicked
+function initNavigationFunctions() {
+  window.showHome = function() {
+    if (app) app.showHome();
+  }
+
+  window.showResources = function() {
+    if (app) app.showResources();
+  }
+
+  window.showVideos = function() {
+    if (app) app.showVideos();
+  }
+
+  window.showCertifications = function() {
+    if (app) app.showCertifications();
+  }
+
+  window.showAITutor = function() {
+    if (app) app.showAITutor();
+  }
+
+  window.showHelp = function() {
+    if (app) app.showHelp();
+  }
 }
 
-function showResources() {
-  if (app) app.showResources();
-}
+// Initialize navigation functions immediately
+initNavigationFunctions();
 
-function showVideos() {
-  if (app) app.showVideos();
-}
-
-function showCertifications() {
-  if (app) app.showCertifications();
-}
-
-function showAIHelper() {
-  if (app) app.showAIHelper();
-}
-
-function showHelp() {
-  if (app) app.showHelp();
-}
+// Add debug info to verify functions exist
+console.log('Navigation functions initialized:', {
+  showHome: typeof window.showHome,
+  showResources: typeof window.showResources,
+  showAITutor: typeof window.showAITutor,
+  showHelp: typeof window.showHelp
+});
