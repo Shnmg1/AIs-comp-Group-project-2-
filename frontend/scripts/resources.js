@@ -13,6 +13,8 @@ class ResourcesPage {
     this.currentView = 'resources'; // 'resources' or 'learning-path' or 'lesson'
     this.currentPath = null;
     this.currentLesson = null;
+    this.isDataLoaded = false;
+    this.isLoading = false;
     // Initialize activity handlers
     if (typeof ActivityHandlers !== 'undefined') {
       this.activityHandlers = new ActivityHandlers(this);
@@ -24,9 +26,84 @@ class ResourcesPage {
     this.currentView = view;
     
     if (view === 'resources') {
-    // Load resources from API with fallback to mock data
+      // Show loading state immediately
+      this.showLoadingState();
+      
+      // Load resources only if not already loaded
+      if (!this.isDataLoaded) {
+        await this.loadResources();
+      } else {
+        // Data already loaded, just display it
+        this.displayResources();
+      }
+    } else if (view === 'learning-paths') {
+      this.displayLearningPaths();
+    } else if (view === 'lesson') {
+      this.displayLesson();
+    }
+  }
+
+  showLoadingState() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="fade-in">
+        <!-- Header -->
+        <div class="hero-section bg-gradient-primary text-white py-5">
+          <div class="container">
+            <div class="row align-items-center">
+              <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                  <i class="bi bi-book me-3"></i>Educational Resources
+                </h1>
+                <p class="lead mb-4">
+                  Discover comprehensive educational resources aligned with Mississippi standards. 
+                  Filter by school level, grade, subject, and resource type to find exactly what you need.
+                </p>
+              </div>
+              <div class="col-lg-4 text-center">
+                <div class="hero-stats">
+                  <div class="stat-item">
+                    <div class="spinner-border text-light" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0 mt-2">Loading Resources...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Content -->
+        <div class="container my-5">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="text-muted">Loading educational resources...</h4>
+            <p class="text-muted">This will only take a moment.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async loadResources() {
+    if (this.isLoading) return; // Prevent multiple simultaneous loads
+    
+    this.isLoading = true;
+    
     try {
-      const response = await fetch('http://localhost:5000/api/resources');
+      // Try API with shorter timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+      
+      const response = await fetch('http://localhost:5000/api/resources', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const apiResources = await response.json();
         
@@ -58,16 +135,14 @@ class ResourcesPage {
     } catch (error) {
       console.log('Using mock resources due to API error:', error.message);
       this.resources = this.getMockResources();
+    } finally {
+      this.isLoading = false;
+      this.isDataLoaded = true;
     }
 
     this.filteredResources = [...this.resources];
-      // Use setTimeout to ensure DOM is ready
-      setTimeout(() => this.displayResources(), 0);
-    } else if (view === 'learning-paths') {
-      this.displayLearningPaths();
-    } else if (view === 'lesson') {
-      this.displayLesson();
-    }
+    // Use setTimeout to ensure DOM is ready
+    setTimeout(() => this.displayResources(), 0);
   }
 
   displayLearningPaths() {

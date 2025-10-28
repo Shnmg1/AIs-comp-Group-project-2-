@@ -162,3 +162,7 @@ ServiceFabricBackup/
 # Azure specific
 *.publishsettings
 orleans.codegen.cs
+
+# Development settings with API keys
+appsettings.Development.json
+api/appsettings.Development.json
