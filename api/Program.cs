@@ -82,6 +82,38 @@ void InitializeDatabase()
         // Column already exists, ignore
     }
 
+    // Migrate grade "K" to "Kindergarten" for consistency
+    var updateKToKindergarten = "UPDATE Resources SET Grade = 'Kindergarten' WHERE Grade = 'K'";
+    try
+    {
+        using var updateGradeCommand = new SqliteCommand(updateKToKindergarten, connection);
+        var rowsUpdated = updateGradeCommand.ExecuteNonQuery();
+        if (rowsUpdated > 0)
+        {
+            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'K' to 'Kindergarten'");
+        }
+    }
+    catch (SqliteException ex)
+    {
+        Console.WriteLine($"Error updating K to Kindergarten: {ex.Message}");
+    }
+
+    // Migrate grade "High School Biology" to "10th Grade" for consistency
+    var updateBiologyGrade = "UPDATE Resources SET Grade = '10th Grade' WHERE Grade = 'High School Biology'";
+    try
+    {
+        using var updateBioGradeCommand = new SqliteCommand(updateBiologyGrade, connection);
+        var rowsUpdated = updateBioGradeCommand.ExecuteNonQuery();
+        if (rowsUpdated > 0)
+        {
+            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'High School Biology' to '10th Grade'");
+        }
+    }
+    catch (SqliteException ex)
+    {
+        Console.WriteLine($"Error updating High School Biology to 10th Grade: {ex.Message}");
+    }
+
     // Create Videos table
     var createVideosTable = @"
         CREATE TABLE IF NOT EXISTS Videos (
@@ -178,17 +210,17 @@ void InsertSampleData(SqliteConnection connection)
 
     // Insert sample resources
     var insertResource = @"
-        INSERT OR IGNORE INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime)
-        VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime)";
+        INSERT OR IGNORE INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime, SchoolLevel, Grade)
+        VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime, @schoolLevel, @grade)";
 
     var resources = new[]
     {
-        new { title = "Mississippi History: The Civil Rights Movement", subject = "History", description = "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.", type = "Study Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours" },
-        new { title = "Algebra Fundamentals", subject = "STEM", description = "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours" },
-        new { title = "Mississippi Literature Analysis", subject = "English", description = "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.", type = "Reading Material", difficulty = "Advanced", estimatedTime = "4-5 hours" },
-        new { title = "Biology: Mississippi Ecosystems", subject = "STEM", description = "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.", type = "Interactive Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours" },
-        new { title = "Grammar and Writing Skills", subject = "English", description = "Essential grammar rules, punctuation, and essay writing techniques for academic success.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours" },
-        new { title = "Mississippi Geography", subject = "History", description = "Comprehensive overview of Mississippi's geography, climate, and natural resources.", type = "Study Guide", difficulty = "Beginner", estimatedTime = "1-2 hours" }
+        new { title = "Mississippi History: The Civil Rights Movement", subject = "History", description = "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.", type = "Study Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "11th Grade" },
+        new { title = "Algebra Fundamentals", subject = "STEM", description = "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Middle School", grade = "8th Grade" },
+        new { title = "Mississippi Literature Analysis", subject = "English", description = "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.", type = "Reading Material", difficulty = "Advanced", estimatedTime = "4-5 hours", schoolLevel = "High School", grade = "12th Grade" },
+        new { title = "Biology: Mississippi Ecosystems", subject = "STEM", description = "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.", type = "Interactive Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "10th Grade" },
+        new { title = "Grammar and Writing Skills", subject = "English", description = "Essential grammar rules, punctuation, and essay writing techniques for academic success.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Elementary", grade = "4th Grade" },
+        new { title = "Mississippi Geography", subject = "History", description = "Comprehensive overview of Mississippi's geography, climate, and natural resources.", type = "Study Guide", difficulty = "Beginner", estimatedTime = "1-2 hours", schoolLevel = "Elementary", grade = "3rd Grade" }
     };
 
     foreach (var resource in resources)
@@ -201,6 +233,8 @@ void InsertSampleData(SqliteConnection connection)
         command.Parameters.AddWithValue("@type", resource.type);
         command.Parameters.AddWithValue("@difficulty", resource.difficulty);
         command.Parameters.AddWithValue("@estimatedTime", resource.estimatedTime);
+        command.Parameters.AddWithValue("@schoolLevel", resource.schoolLevel);
+        command.Parameters.AddWithValue("@grade", resource.grade);
         command.ExecuteNonQuery();
     }
 

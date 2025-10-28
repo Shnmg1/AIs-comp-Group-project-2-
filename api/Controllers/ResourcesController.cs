@@ -204,5 +204,19 @@ namespace QualityEducationAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("clear-all")]
+        public async Task<IActionResult> ClearAllResources()
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = "DELETE FROM Resources";
+            
+            using var command = new SqliteCommand(query, connection);
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+
+            return Ok(new { message = $"Cleared {rowsAffected} resources" });
+        }
     }
 }

@@ -139,6 +139,12 @@ namespace QualityEducationAPI.Controllers
             
             var questionLower = question.ToLower();
             
+            // Check if this is a tutor prompt (contains pedagogical instructions)
+            if (questionLower.Contains("you are an ai tutor") || questionLower.Contains("important guidelines"))
+            {
+                return GenerateTutorResponse(question, subject, studentLevel);
+            }
+            
             if (questionLower.Contains("algebra") || questionLower.Contains("math") || questionLower.Contains("equation"))
             {
                 return @"I'd be happy to help you with algebra! Let's break this down step by step.
@@ -211,6 +217,87 @@ To provide you with the most helpful guidance, could you give me a bit more deta
 I believe in helping you learn the process and reasoning behind solutions, not just giving you the answers. This way, you'll be able to tackle similar problems independently in the future!
 
 What additional details can you share about your question?";
+        }
+
+        private string GenerateTutorResponse(string tutorPrompt, string? subject, string? studentLevel)
+        {
+            // Extract the student's actual question from the tutor prompt
+            var lines = tutorPrompt.Split('\n');
+            var studentQuestion = lines.LastOrDefault(line => line.StartsWith("Student's new question:"))?.Replace("Student's new question:", "").Trim() ?? "";
+            
+            if (string.IsNullOrEmpty(studentQuestion))
+            {
+                return @"I'm here to help you learn! Could you tell me what specific topic or problem you'd like to work on? I'll guide you through understanding the concepts step by step rather than just giving you the answer.";
+            }
+
+            var questionLower = studentQuestion.ToLower();
+            
+            // Generate pedagogical responses based on subject
+            if (questionLower.Contains("quadratic") || questionLower.Contains("equation"))
+            {
+                return @"Great question about quadratic equations! Let's work through this together.
+
+First, let me ask you some guiding questions:
+1. Do you know what makes an equation 'quadratic'? What's the highest power of the variable?
+2. Have you seen the standard form of a quadratic equation before?
+3. What methods do you know for solving quadratics?
+
+Instead of just showing you the answer, let's start with the basics. Can you tell me what you already know about quadratic equations? This will help me guide you to the solution step by step!";
+            }
+            
+            if (questionLower.Contains("photosynthesis"))
+            {
+                return @"Excellent question about photosynthesis! This is a fundamental process in biology.
+
+Let's break this down together:
+1. What do you think plants need to make their own food?
+2. Where do you think this process happens in the plant?
+3. What do you know about sunlight and its role in plant growth?
+
+I'll help you understand the process, but first, let's see what you already know. Can you tell me what you think photosynthesis is, in your own words? Then I can guide you through the scientific explanation step by step!";
+            }
+            
+            if (questionLower.Contains("fraction"))
+            {
+                return @"Fractions can be tricky! Let's work through this together.
+
+First, let me understand what you're working with:
+1. Are you adding, subtracting, multiplying, or dividing fractions?
+2. Do you know what the numerator and denominator represent?
+3. Have you worked with equivalent fractions before?
+
+Instead of just giving you the answer, let's start with what you know. Can you show me the fraction problem you're working on? I'll guide you through the steps to solve it yourself!";
+            }
+            
+            if (questionLower.Contains("essay") || questionLower.Contains("write"))
+            {
+                return @"Writing essays is a skill that takes practice! I'm here to help you develop your writing abilities.
+
+Let's start with some questions:
+1. What type of essay are you writing? (persuasive, informative, narrative?)
+2. Do you have a topic or prompt to work with?
+3. What's the main point you want to make?
+
+I won't write the essay for you, but I can help you:
+- Organize your ideas
+- Develop a strong thesis statement
+- Structure your paragraphs
+- Improve your arguments
+
+What's your essay topic or prompt? Let's work through the planning process together!";
+            }
+            
+            // Default pedagogical response
+            return @"That's a great question! I'm excited to help you learn.
+
+To give you the best guidance, could you tell me:
+1. What subject area this relates to?
+2. What specific part are you struggling with?
+3. What have you tried so far?
+
+Remember, I'm here to teach you HOW to think through problems, not just give you answers. This way, you'll be able to solve similar problems on your own in the future!
+
+What additional details can you share about what you're working on?";
         }
     }
 }
