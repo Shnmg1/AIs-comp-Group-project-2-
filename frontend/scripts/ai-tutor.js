@@ -87,12 +87,12 @@ class AITutorPage {
                       id="messageInput" 
                       placeholder="Ask me anything... I'll help you learn!"
                       onkeypress="aiTutorPage.handleKeyPress(event)"
-                      disabled="${this.isTyping ? 'true' : 'false'}"
+                      ${this.isTyping ? 'disabled' : ''}
                     >
                     <button 
                       class="btn btn-primary px-4" 
                       onclick="aiTutorPage.sendMessage()"
-                      disabled="${this.isTyping ? 'true' : 'false'}"
+                      ${this.isTyping ? 'disabled' : ''}
                     >
                       <i class="bi bi-send-fill"></i>
                     </button>
@@ -177,82 +177,69 @@ class AITutorPage {
     const message = input.value.trim();
     
     if (!message || this.isTyping) return;
-    
-    // Add user message
+
+    // 1. Add user's message to the chat history
     this.messages.push({
       role: "user",
       content: message,
       timestamp: new Date().toISOString()
     });
     
+    // 2. Set isTyping to true and clear the input
+    this.isTyping = true;
     input.value = '';
+
+    // 3. Re-render the UI to show the new message and disable the input field
     this.render();
     
-    // Show typing indicator
+    // 4. Show typing indicator
     this.showTypingIndicator();
     
     try {
-      // Call the API with conversation history
       const response = await this.callTutorAPI(message);
       
-      // Remove typing indicator and add AI response
+      // Remove typing indicator before adding AI response
       this.hideTypingIndicator();
+      
       this.messages.push({
         role: "assistant", 
         content: response,
         timestamp: new Date().toISOString()
       });
-      
-      this.render();
-      
     } catch (error) {
       console.error('Error getting AI response:', error);
+      // Remove typing indicator on error too
       this.hideTypingIndicator();
       this.messages.push({
         role: "assistant",
         content: "I apologize, but I encountered an error. Please try again.",
         timestamp: new Date().toISOString()
       });
+    } finally {
+      // 4. No matter what happens, set isTyping to false and re-render the UI.
+      // This will show the AI's response and, most importantly, re-enable the input box.
+      this.isTyping = false;
       this.render();
     }
   }
 
   async callTutorAPI(userMessage) {
     // Build conversation history for context
-    const conversationHistory = this.messages
-      .map(m => `${m.role === 'user' ? 'Student' : 'Tutor'}: ${m.content}`)
-      .join('\n\n');
-    
-    // Create the pedagogical prompt
-    const tutorPrompt = `You are an AI tutor for Mississippi K-12 students. Your goal is to teach students HOW to think and solve problems, not just give them answers.
+    const conversationHistory = this.messages.slice(0, -1).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
 
-IMPORTANT GUIDELINES:
-- Never give direct answers to homework or test questions
-- Ask guiding questions that lead students to discover the solution themselves
-- Break down complex problems into smaller, manageable steps
-- Encourage critical thinking and problem-solving skills
-- Use the Socratic method: ask questions rather than telling
-- Provide hints and examples, but let the student do the work
-- Be encouraging, patient, and supportive
-- If a student asks for a direct answer, explain that you'll help them learn to solve it instead
-- Use simple, age-appropriate language
-
-Previous conversation:
-${conversationHistory}
-
-Student's new question: ${userMessage}
-
-Respond as a helpful tutor who guides without giving direct answers:`;
-
-    const response = await fetch('http://localhost:5000/api/AIHelper/ask', {
+    const response = await fetch(`${this.app.apiBaseUrl}/AIHelper/ask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        question: tutorPrompt,
+        question: userMessage,
         subject: this.detectSubject(userMessage),
-        studentLevel: 'K-12'
+        studentLevel: 'K-12',
+        conversationHistory: conversationHistory
       })
     });
 
@@ -282,8 +269,9 @@ Respond as a helpful tutor who guides without giving direct answers:`;
   }
 
   showTypingIndicator() {
-    this.isTyping = true;
     const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+    
     const typingDiv = document.createElement('div');
     typingDiv.className = 'd-flex gap-3 justify-content-start mb-3';
     typingDiv.id = 'typingIndicator';
@@ -305,7 +293,6 @@ Respond as a helpful tutor who guides without giving direct answers:`;
   }
 
   hideTypingIndicator() {
-    this.isTyping = false;
     const typingIndicator = document.getElementById('typingIndicator');
     if (typingIndicator) {
       typingIndicator.remove();

@@ -2283,3 +2283,13 @@ mark.bg-warning {
     font-size: 0.75rem;
   }
 }
+
+/* AI Tutor Typing Indicator Animation */
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}

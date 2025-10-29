@@ -266,14 +266,13 @@ namespace QualityEducationAPI.Controllers
             prompt.AppendLine("You are a Socratic tutor for Mississippi K-12 students. Your role is to guide students to discover answers through questioning, not to provide direct answers.");
             prompt.AppendLine();
             prompt.AppendLine("CORE RULES:");
-            prompt.AppendLine("1. NEVER give direct answers to homework or test questions");
-            prompt.AppendLine("2. Break complex problems into smaller guiding questions");
-            prompt.AppendLine("3. Ask what the student already knows before explaining");
-            prompt.AppendLine("4. Use examples and analogies appropriate for the grade level");
-            prompt.AppendLine("5. Celebrate progress and encourage critical thinking");
-            prompt.AppendLine("6. If student is stuck, provide hints but not solutions");
-            prompt.AppendLine("7. Keep responses conversational and encouraging");
-            prompt.AppendLine("8. Respond in 2-4 paragraphs maximum");
+            prompt.AppendLine("1. **NEVER give direct answers** to homework or test questions. Your goal is to teach the *process* of solving the problem.");
+            prompt.AppendLine("2. **Ask Guiding Questions:** Instead of giving the answer, ask a question that leads the student to the next step. Break down complex problems into smaller, manageable steps.");
+            prompt.AppendLine("3. **Assess Understanding:** Start by asking what the student already knows or has tried. For example: 'What have you tried so far?' or 'What part is confusing you?'");
+            prompt.AppendLine("4. **Provide Hints, Not Solutions:** If a student is stuck, provide a small hint or a similar, simpler example. Let the student make the final connection.");
+            prompt.AppendLine("5. **Be Encouraging and Patient:** Use positive reinforcement. Phrases like 'That's a great start!' or 'You're on the right track!' are very effective. Celebrate their progress.");
+            prompt.AppendLine("6. **Use the Socratic Method:** Guide the student through their own thought process. Ask 'why' and 'how' to encourage deeper thinking.");
+            prompt.AppendLine("7. **Keep it Conversational:** Maintain a friendly, supportive, and patient tone. Respond in 2-4 paragraphs maximum to avoid overwhelming the student.");
             prompt.AppendLine();
 
             // Add context
@@ -290,10 +289,10 @@ namespace QualityEducationAPI.Controllers
             // Add conversation history if available
             if (conversationHistory != null && conversationHistory.Any())
             {
-                prompt.AppendLine("Previous conversation context:");
-                foreach (var message in conversationHistory.TakeLast(10))
+                prompt.AppendLine("PREVIOUS CONVERSATION HISTORY:");
+                foreach (var message in conversationHistory.TakeLast(10)) // Take the last 10 messages for context
                 {
-                    var role = message.Role == "user" ? "Student" : "Tutor";
+                    var role = message.Role == "user" ? "Student" : "Tutor"; // Use "Student" and "Tutor" for clarity
                     prompt.AppendLine($"{role}: {message.Content}");
                 }
                 prompt.AppendLine();

@@ -52,11 +52,11 @@ namespace QualityEducationAPI.Controllers
                         {
                             paths.Add(new
                             {
-                                id = reader["id"].ToString(),
-                                grade = reader["grade"].ToString(),
-                                subject = reader["subject"].ToString(),
-                                title = reader["title"].ToString(),
-                                description = reader["description"].ToString()
+                                id = reader["id"].ToString() ?? string.Empty,
+                                grade = reader["grade"].ToString() ?? string.Empty,
+                                subject = reader["subject"].ToString() ?? string.Empty,
+                                title = reader["title"].ToString() ?? string.Empty,
+                                description = reader["description"].ToString() ?? string.Empty
                             });
                         }
                     }
@@ -89,11 +89,11 @@ namespace QualityEducationAPI.Controllers
                     {
                         if (reader.Read())
                         {
-                            pathInfo["id"] = reader["id"].ToString();
-                            pathInfo["grade"] = reader["grade"].ToString();
-                            pathInfo["subject"] = reader["subject"].ToString();
-                            pathInfo["title"] = reader["title"].ToString();
-                            pathInfo["description"] = reader["description"].ToString();
+                            pathInfo["id"] = reader["id"].ToString() ?? string.Empty;
+                            pathInfo["grade"] = reader["grade"].ToString() ?? string.Empty;
+                            pathInfo["subject"] = reader["subject"].ToString() ?? string.Empty;
+                            pathInfo["title"] = reader["title"].ToString() ?? string.Empty;
+                            pathInfo["description"] = reader["description"].ToString() ?? string.Empty;
                         }
                         else
                         {
@@ -119,10 +119,10 @@ namespace QualityEducationAPI.Controllers
                         {
                             lessons.Add(new
                             {
-                                id = reader["id"].ToString(),
+                                id = reader["id"].ToString() ?? string.Empty,
                                 lessonNumber = (int)reader["lesson_number"],
-                                objective = reader["objective"].ToString(),
-                                content = reader["content"].ToString()
+                                objective = reader["objective"].ToString() ?? string.Empty,
+                                content = reader["content"].ToString() ?? string.Empty
                             });
                         }
                     }
@@ -159,11 +159,11 @@ namespace QualityEducationAPI.Controllers
                         {
                             var lesson = new Dictionary<string, object>
                             {
-                                ["id"] = reader["id"].ToString(),
-                                ["pathId"] = reader["path_id"].ToString(),
+                                ["id"] = reader["id"].ToString() ?? string.Empty,
+                                ["pathId"] = reader["path_id"].ToString() ?? string.Empty,
                                 ["lessonNumber"] = (int)reader["lesson_number"],
-                                ["objective"] = reader["objective"].ToString(),
-                                ["content"] = reader["content"].ToString()
+                                ["objective"] = reader["objective"].ToString() ?? string.Empty,
+                                ["content"] = reader["content"].ToString() ?? string.Empty
                             };
 
                             // Get practice questions and activities from the original JS file structure

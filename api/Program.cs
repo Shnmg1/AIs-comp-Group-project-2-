@@ -238,8 +238,45 @@ void InitializeDatabase()
     command.CommandText = createContactsTable;
     command.ExecuteNonQuery();
 
-    // Insert sample data
+    // Count before any operations
+    var countBefore = connection.CreateCommand();
+    countBefore.CommandText = "SELECT COUNT(*) FROM Resources";
+    var initialCount = Convert.ToInt32(countBefore.ExecuteScalar());
+    Console.WriteLine($"Initial resources in database: {initialCount}");
+
+    // Remove duplicates (keep only unique resources)
+    RemoveDuplicates(connection);
+
+    // Insert sample data (only adds if not exists)
     InsertSampleData(connection);
+    
+    // Final count
+    var countAfter = connection.CreateCommand();
+    countAfter.CommandText = "SELECT COUNT(*) FROM Resources";
+    var finalCount = Convert.ToInt32(countAfter.ExecuteScalar());
+    Console.WriteLine($"\nFinal total resources in database: {finalCount}");
+    
+    // Check for specific resources the user mentioned
+    CheckSpecificResources(connection);
+}
+
+void CheckSpecificResources(SqliteConnection connection)
+{
+    var titles = new[] { 
+        "Authority Figures", "Good Citizenship", "Identify Functions of Plant Cell Parts",
+        "Count Pictures Up to 3", "Mississippi History: The Civil Rights Movement"
+    };
+    
+    Console.WriteLine("\nChecking presence of key resources:");
+    var command = connection.CreateCommand();
+    foreach (var title in titles)
+    {
+        command.CommandText = "SELECT COUNT(*) FROM Resources WHERE Title = @title";
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@title", title);
+        var count = Convert.ToInt32(command.ExecuteScalar());
+        Console.WriteLine($"  {title}: {(count > 0 ? "✓ Found" : "✗ Not found")}");
+    }
 }
 
 void InsertSampleData(SqliteConnection connection)
@@ -333,5 +370,49 @@ void InsertSampleData(SqliteConnection connection)
         command.Parameters.AddWithValue("@validity", cert.validity);
         command.Parameters.AddWithValue("@cost", cert.cost);
         command.ExecuteNonQuery();
+    }
+}
+
+void RemoveDuplicates(SqliteConnection connection)
+{
+    var command = connection.CreateCommand();
+    
+    // Count before
+    command.CommandText = "SELECT COUNT(*) FROM Resources";
+    var beforeCount = Convert.ToInt32(command.ExecuteScalar());
+    Console.WriteLine($"Current resources before cleanup: {beforeCount}");
+    
+    // Remove duplicates (keep the row with the lowest Id for each Title+Subject+Description combination)
+    command.CommandText = @"
+        DELETE FROM Resources 
+        WHERE Id NOT IN (
+            SELECT MIN(Id) 
+            FROM Resources 
+            GROUP BY Title, Subject, Description
+        )
+    ";
+    var deleted = command.ExecuteNonQuery();
+    
+    // Count after
+    command.CommandText = "SELECT COUNT(*) FROM Resources";
+    var afterCount = Convert.ToInt32(command.ExecuteScalar());
+    
+    // Show detail: count by subject
+    command.CommandText = "SELECT Subject, COUNT(*) FROM Resources GROUP BY Subject";
+    using var reader = command.ExecuteReader();
+    Console.WriteLine("\nResources by subject:");
+    while (reader.Read())
+    {
+        Console.WriteLine($"  {reader.GetString(0)}: {reader.GetInt32(1)}");
+    }
+    
+    if (deleted > 0)
+    {
+        Console.WriteLine($"\nRemoved {deleted} duplicate rows");
+        Console.WriteLine($"Unique resources after cleanup: {afterCount}");
+    }
+    else
+    {
+        Console.WriteLine($"\nNo duplicates found. Total unique resources: {afterCount}");
     }
 }
