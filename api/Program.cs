@@ -35,7 +35,8 @@ app.MapControllers();
 // Serve static files - serve index.html for root
 app.MapGet("/", async context =>
 {
-    var indexPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "index.html");
+    // Point to SPA entry under Pages/index.html
+    var indexPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "Pages", "index.html");
     context.Response.ContentType = "text/html";
     await context.Response.SendFileAsync(indexPath);
 });
