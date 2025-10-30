@@ -2053,6 +2053,8 @@ class VideosPage {
   }
 
   showYouTubeModal(video) {
+    const isHttpOrigin = typeof window !== 'undefined' && window.location && /^https?:/i.test(window.location.protocol);
+    const originParam = isHttpOrigin ? `&origin=${encodeURIComponent(window.location.origin)}` : '';
     const modalHtml = `
       <div class="modal fade" id="videoModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -2064,10 +2066,11 @@ class VideosPage {
             <div class="modal-body">
               <div class="ratio ratio-16x9 mb-4">
                 <iframe 
-                  src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0" 
+                  src="https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&enablejsapi=1${originParam}" 
                   title="${video.title}"
                   frameborder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  referrerpolicy="origin-when-cross-origin"
                   allowfullscreen>
                 </iframe>
               </div>
