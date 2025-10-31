@@ -183,8 +183,9 @@ namespace QualityEducationAPI.Controllers
             string? studentLevel,
             List<ConversationMessage>? conversationHistory)
         {
-            // Get configuration
-            var apiKey = _configuration["GeminiAPI:ApiKey"];
+            // Get configuration - prioritize environment variable for production
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
+                         ?? _configuration["GeminiAPI:ApiKey"];
             var model = _configuration["GeminiAPI:Model"] ?? "gemini-2.5-flash";
             var endpointTemplate = _configuration["GeminiAPI:Endpoint"]
                 ?? "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
