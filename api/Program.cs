@@ -2,6 +2,13 @@ using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure port from deployment environment (e.g., Railway's PORT variable)
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
@@ -250,24 +257,24 @@ void InitializeDatabase()
 
     // Insert sample data (only adds if not exists)
     InsertSampleData(connection);
-    
+
     // Final count
     var countAfter = connection.CreateCommand();
     countAfter.CommandText = "SELECT COUNT(*) FROM Resources";
     var finalCount = Convert.ToInt32(countAfter.ExecuteScalar());
     Console.WriteLine($"\nFinal total resources in database: {finalCount}");
-    
+
     // Check for specific resources the user mentioned
     CheckSpecificResources(connection);
 }
 
 void CheckSpecificResources(SqliteConnection connection)
 {
-    var titles = new[] { 
+    var titles = new[] {
         "Authority Figures", "Good Citizenship", "Identify Functions of Plant Cell Parts",
         "Count Pictures Up to 3", "Mississippi History: The Civil Rights Movement"
     };
-    
+
     Console.WriteLine("\nChecking presence of key resources:");
     var command = connection.CreateCommand();
     foreach (var title in titles)
@@ -377,12 +384,12 @@ void InsertSampleData(SqliteConnection connection)
 void RemoveDuplicates(SqliteConnection connection)
 {
     var command = connection.CreateCommand();
-    
+
     // Count before
     command.CommandText = "SELECT COUNT(*) FROM Resources";
     var beforeCount = Convert.ToInt32(command.ExecuteScalar());
     Console.WriteLine($"Current resources before cleanup: {beforeCount}");
-    
+
     // Remove duplicates (keep the row with the lowest Id for each Title+Subject+Description combination)
     command.CommandText = @"
         DELETE FROM Resources 
@@ -393,11 +400,11 @@ void RemoveDuplicates(SqliteConnection connection)
         )
     ";
     var deleted = command.ExecuteNonQuery();
-    
+
     // Count after
     command.CommandText = "SELECT COUNT(*) FROM Resources";
     var afterCount = Convert.ToInt32(command.ExecuteScalar());
-    
+
     // Show detail: count by subject
     command.CommandText = "SELECT Subject, COUNT(*) FROM Resources GROUP BY Subject";
     using var reader = command.ExecuteReader();
@@ -406,7 +413,7 @@ void RemoveDuplicates(SqliteConnection connection)
     {
         Console.WriteLine($"  {reader.GetString(0)}: {reader.GetInt32(1)}");
     }
-    
+
     if (deleted > 0)
     {
         Console.WriteLine($"\nRemoved {deleted} duplicate rows");

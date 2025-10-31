@@ -1,0 +1,14 @@
+.git
+.gitignore
+.cursorrules
+.claude/
+api/bin/
+api/obj/
+**/bin/
+**/obj/
+node_modules/
+.vscode/
+Dockerfile
+bin/
+obj/
+database.db
