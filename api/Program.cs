@@ -42,17 +42,30 @@ app.MapControllers();
 // Serve static files - serve index.html for root
 app.MapGet("/", async context =>
 {
-    // Point to SPA entry under Pages/index.html
-    var indexPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "Pages", "index.html");
-    context.Response.ContentType = "text/html";
-    await context.Response.SendFileAsync(indexPath);
+    // In Docker container, Pages is at /Pages; locally it's at ../Pages
+    var pagesPath = Directory.Exists("/Pages") ? "/Pages" : Path.Combine(Directory.GetCurrentDirectory(), "..", "Pages");
+    var indexPath = Path.Combine(pagesPath, "index.html");
+
+    if (File.Exists(indexPath))
+    {
+        context.Response.ContentType = "text/html";
+        await context.Response.SendFileAsync(indexPath);
+    }
+    else
+    {
+        context.Response.StatusCode = 404;
+        await context.Response.WriteAsync($"index.html not found at {indexPath}");
+    }
 });
 
 // Serve frontend folder
 app.MapGet("/frontend/{**path}", async context =>
 {
     var path = context.Request.RouteValues["path"]?.ToString() ?? "";
-    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "frontend", path);
+
+    // In Docker container, frontend is at /frontend; locally it's at ../frontend
+    var frontendRoot = Directory.Exists("/frontend") ? "/frontend" : Path.Combine(Directory.GetCurrentDirectory(), "..", "frontend");
+    var filePath = Path.Combine(frontendRoot, path);
 
     if (File.Exists(filePath))
     {

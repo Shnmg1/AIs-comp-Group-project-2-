@@ -51,16 +51,18 @@ namespace QualityEducationAPI.Controllers
             string aiResponse;
             try
             {
+                _logger.LogInformation("Calling Gemini API for question: {Question}", request.Question);
                 aiResponse = await CallGeminiAPI(
                     request.Question,
                     request.Subject,
                     request.StudentLevel,
                     request.ConversationHistory
                 );
+                _logger.LogInformation("Successfully received Gemini API response");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calling Gemini API");
+                _logger.LogError(ex, "Error calling Gemini API: {Message}", ex.Message);
 
                 // Return user-friendly error message based on exception type
                 if (ex is HttpRequestException)
@@ -75,9 +77,13 @@ namespace QualityEducationAPI.Controllers
                 {
                     aiResponse = "Too many questions at once! Please wait a moment before asking another question.";
                 }
+                else if (ex.Message.Contains("Gemini API key not configured"))
+                {
+                    aiResponse = "The AI assistant is not configured. Please set the GEMINI_API_KEY environment variable.";
+                }
                 else
                 {
-                    aiResponse = "I encountered an unexpected error. Please try rephrasing your question or try again later.";
+                    aiResponse = $"I encountered an unexpected error: {ex.Message}. Please try rephrasing your question or try again later.";
                 }
             }
 
@@ -190,8 +196,11 @@ namespace QualityEducationAPI.Controllers
             var endpointTemplate = _configuration["GeminiAPI:Endpoint"]
                 ?? "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
+            _logger.LogInformation("API Key configured: {HasKey}", !string.IsNullOrEmpty(apiKey) && apiKey != "YOUR_API_KEY_HERE");
+
             if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_API_KEY_HERE")
             {
+                _logger.LogError("Gemini API key not configured");
                 throw new InvalidOperationException("Gemini API key not configured");
             }
 
