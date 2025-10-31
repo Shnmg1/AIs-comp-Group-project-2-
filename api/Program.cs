@@ -283,17 +283,17 @@ void InsertSampleData(SqliteConnection connection)
 
     // Insert sample resources
     var insertResource = @"
-        INSERT OR IGNORE INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime, SchoolLevel, Grade)
-        VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime, @schoolLevel, @grade)";
+        INSERT OR IGNORE INTO Resources (Title, Subject, Description, Type, Difficulty, EstimatedTime, SchoolLevel, Grade, ContentUrl)
+        VALUES (@title, @subject, @description, @type, @difficulty, @estimatedTime, @schoolLevel, @grade, @contentUrl)";
 
     var resources = new[]
     {
-        new { title = "Mississippi History: The Civil Rights Movement", subject = "History", description = "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.", type = "Study Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "11th Grade" },
-        new { title = "Algebra Fundamentals", subject = "STEM", description = "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Middle School", grade = "8th Grade" },
-        new { title = "Mississippi Literature Analysis", subject = "English", description = "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.", type = "Reading Material", difficulty = "Advanced", estimatedTime = "4-5 hours", schoolLevel = "High School", grade = "12th Grade" },
-        new { title = "Biology: Mississippi Ecosystems", subject = "STEM", description = "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.", type = "Interactive Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "10th Grade" },
-        new { title = "Grammar and Writing Skills", subject = "English", description = "Essential grammar rules, punctuation, and essay writing techniques for academic success.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Elementary", grade = "4th Grade" },
-        new { title = "Mississippi Geography", subject = "History", description = "Comprehensive overview of Mississippi's geography, climate, and natural resources.", type = "Study Guide", difficulty = "Beginner", estimatedTime = "1-2 hours", schoolLevel = "Elementary", grade = "3rd Grade" }
+        new { title = "Mississippi History: The Civil Rights Movement", subject = "History", description = "Comprehensive study guide covering key events, figures, and impacts of the Civil Rights Movement in Mississippi.", type = "Study Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "11th Grade", contentUrl = "#" },
+        new { title = "Algebra Fundamentals", subject = "STEM", description = "Step-by-step guide to algebraic concepts including variables, equations, and problem-solving strategies.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Middle School", grade = "8th Grade", contentUrl = "#" },
+        new { title = "Mississippi Literature Analysis", subject = "English", description = "Analysis of prominent Mississippi authors including William Faulkner, Eudora Welty, and Richard Wright.", type = "Reading Material", difficulty = "Advanced", estimatedTime = "4-5 hours", schoolLevel = "High School", grade = "12th Grade", contentUrl = "#" },
+        new { title = "Biology: Mississippi Ecosystems", subject = "STEM", description = "Explore the unique ecosystems of Mississippi including the Gulf Coast, Delta, and Piney Woods regions.", type = "Interactive Guide", difficulty = "Intermediate", estimatedTime = "2-3 hours", schoolLevel = "High School", grade = "10th Grade", contentUrl = "#" },
+        new { title = "Grammar and Writing Skills", subject = "English", description = "Essential grammar rules, punctuation, and essay writing techniques for academic success.", type = "Practice Exercises", difficulty = "Beginner", estimatedTime = "3-4 hours", schoolLevel = "Elementary", grade = "4th Grade", contentUrl = "#" },
+        new { title = "Mississippi Geography", subject = "History", description = "Comprehensive overview of Mississippi's geography, climate, and natural resources.", type = "Study Guide", difficulty = "Beginner", estimatedTime = "1-2 hours", schoolLevel = "Elementary", grade = "3rd Grade", contentUrl = "#" }
     };
 
     foreach (var resource in resources)
@@ -308,6 +308,7 @@ void InsertSampleData(SqliteConnection connection)
         command.Parameters.AddWithValue("@estimatedTime", resource.estimatedTime);
         command.Parameters.AddWithValue("@schoolLevel", resource.schoolLevel);
         command.Parameters.AddWithValue("@grade", resource.grade);
+        command.Parameters.AddWithValue("@contentUrl", resource.contentUrl);
         command.ExecuteNonQuery();
     }
 
