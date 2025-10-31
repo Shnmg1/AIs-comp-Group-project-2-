@@ -117,62 +117,6 @@ void InitializeDatabase()
             CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )";
 
-    // Add SchoolLevel and Grade columns if they don't exist
-    var addSchoolLevelColumn = "ALTER TABLE Resources ADD COLUMN SchoolLevel TEXT DEFAULT ''";
-    var addGradeColumn = "ALTER TABLE Resources ADD COLUMN Grade TEXT DEFAULT ''";
-
-    try
-    {
-        using var addSchoolLevelCommand = new SqliteCommand(addSchoolLevelColumn, connection);
-        addSchoolLevelCommand.ExecuteNonQuery();
-    }
-    catch (SqliteException)
-    {
-        // Column already exists, ignore
-    }
-
-    try
-    {
-        using var addGradeCommand = new SqliteCommand(addGradeColumn, connection);
-        addGradeCommand.ExecuteNonQuery();
-    }
-    catch (SqliteException)
-    {
-        // Column already exists, ignore
-    }
-
-    // Migrate grade "K" to "Kindergarten" for consistency
-    var updateKToKindergarten = "UPDATE Resources SET Grade = 'Kindergarten' WHERE Grade = 'K'";
-    try
-    {
-        using var updateGradeCommand = new SqliteCommand(updateKToKindergarten, connection);
-        var rowsUpdated = updateGradeCommand.ExecuteNonQuery();
-        if (rowsUpdated > 0)
-        {
-            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'K' to 'Kindergarten'");
-        }
-    }
-    catch (SqliteException ex)
-    {
-        Console.WriteLine($"Error updating K to Kindergarten: {ex.Message}");
-    }
-
-    // Migrate grade "High School Biology" to "10th Grade" for consistency
-    var updateBiologyGrade = "UPDATE Resources SET Grade = '10th Grade' WHERE Grade = 'High School Biology'";
-    try
-    {
-        using var updateBioGradeCommand = new SqliteCommand(updateBiologyGrade, connection);
-        var rowsUpdated = updateBioGradeCommand.ExecuteNonQuery();
-        if (rowsUpdated > 0)
-        {
-            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'High School Biology' to '10th Grade'");
-        }
-    }
-    catch (SqliteException ex)
-    {
-        Console.WriteLine($"Error updating High School Biology to 10th Grade: {ex.Message}");
-    }
-
     // Create Videos table
     var createVideosTable = @"
         CREATE TABLE IF NOT EXISTS Videos (
@@ -258,6 +202,39 @@ void InitializeDatabase()
 
     command.CommandText = createContactsTable;
     command.ExecuteNonQuery();
+
+    // Now that tables are created, perform data migrations
+    // Migrate grade "K" to "Kindergarten" for consistency
+    var updateKToKindergarten = "UPDATE Resources SET Grade = 'Kindergarten' WHERE Grade = 'K'";
+    try
+    {
+        using var updateGradeCommand = new SqliteCommand(updateKToKindergarten, connection);
+        var rowsUpdated = updateGradeCommand.ExecuteNonQuery();
+        if (rowsUpdated > 0)
+        {
+            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'K' to 'Kindergarten'");
+        }
+    }
+    catch (SqliteException ex)
+    {
+        Console.WriteLine($"Error updating K to Kindergarten: {ex.Message}");
+    }
+
+    // Migrate grade "High School Biology" to "10th Grade" for consistency
+    var updateBiologyGrade = "UPDATE Resources SET Grade = '10th Grade' WHERE Grade = 'High School Biology'";
+    try
+    {
+        using var updateBioGradeCommand = new SqliteCommand(updateBiologyGrade, connection);
+        var rowsUpdated = updateBioGradeCommand.ExecuteNonQuery();
+        if (rowsUpdated > 0)
+        {
+            Console.WriteLine($"Updated {rowsUpdated} resources from grade 'High School Biology' to '10th Grade'");
+        }
+    }
+    catch (SqliteException ex)
+    {
+        Console.WriteLine($"Error updating High School Biology to 10th Grade: {ex.Message}");
+    }
 
     // Count before any operations
     var countBefore = connection.CreateCommand();
