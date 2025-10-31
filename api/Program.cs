@@ -303,7 +303,7 @@ void InsertSampleData(SqliteConnection connection)
 
             try
             {
-                command.CommandText = statement.Replace("INSERT INTO Resources", "INSERT OR IGNORE INTO Resources");
+                command.CommandText = statement;
                 command.ExecuteNonQuery();
                 insertedCount++;
             }
