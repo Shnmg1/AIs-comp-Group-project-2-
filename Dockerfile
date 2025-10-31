@@ -23,6 +23,9 @@ COPY --from=build /app/publish .
 COPY Pages /Pages
 COPY frontend /frontend
 
+# Copy database migrations for seeding resources
+COPY api/database-migrations /database-migrations
+
 # Railway provides the PORT environment variable; default to 8080 when missing
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
